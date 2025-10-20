@@ -101,7 +101,7 @@ class Individual:
             tmp += "[%s, %s, %s], " % (
                 str(op[0]),
                 "tadashi.TrEnum." + op[1].name,
-                str(op[2:]),
+                str(*op[2:]),
             )
         tmp += "]"
         return "%s --- %s" % (tmp, f)
@@ -159,8 +159,12 @@ class Individual:
     def isLegal(self, app_factory=None):
         app = app_factory.generate_code(populate_scops=True)
         scops = app.scops[0]
-        valid = scops.transform_list(self.operation_list)
-        return sum([0 if v else 1 for v in valid]) == 0
+        try:
+            valid = scops.transform_list(self.operation_list)
+            return sum([0 if v else 1 for v in valid]) == 0
+        except ValueError:
+            # If it cant transform, its not valid
+            return False
 
     def crossover(self, other, app_factory=None):
         # 20% chance to crossover, 0% if either parents have length 0
@@ -234,7 +238,7 @@ class Individual:
                     args = random_args(node, tran)
 
                     op = [x2, tran, *args]
-                    print("IN MUT", op)
+                    #print("IN MUT", op)
 
                     tmp_op = op_list[:]
                     tmp_op.append(op)
