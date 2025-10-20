@@ -101,7 +101,7 @@ class Individual:
             tmp += "[%s, %s, %s], " % (
                 str(op[0]),
                 "tadashi.TrEnum." + op[1].name,
-                str(*op[2:]),
+                ", ".join(str(x) for x in op[2:]),
             )
         tmp += "]"
         return "%s --- %s" % (tmp, f)
