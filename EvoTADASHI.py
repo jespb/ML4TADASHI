@@ -476,7 +476,7 @@ class EvolTadashi:
         # < use parellel in the final model >
         #
 
-        full_tr_list = [t[1:] for t in  self.best_individual.operation_list]
+        full_tr_list = self.best_individual.operation_list
 
         app = self.app_factory
         scops = app.scops
