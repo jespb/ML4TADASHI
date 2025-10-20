@@ -227,7 +227,12 @@ class Individual:
             while not found:
                 at += 1
                 # print("Trying to find valid mut")
-                st = scops.schedule_tree
+                try:
+                    st = scops.schedule_tree
+                except ValueError:
+                    print("[VALUE ERROR ACESSING ST on %d attempt of mutation] -- " % at, self)
+                    return self
+
                 x2 = randint(0, len(st) - 1)
                 node = st[x2]
 
@@ -477,41 +482,44 @@ class EvolTadashi:
         # < use parellel in the final model >
         #
 
-        full_tr_list = self.best_individual.operation_list
+        try:
+            full_tr_list = self.best_individual.operation_list
 
-        app = self.app_factory
-        scops = app.scops
-        valid = scops[0].transform_list(full_tr_list)
+            app = self.app_factory
+            scops = app.scops
+            valid = scops[0].transform_list(full_tr_list)
 
-        trs = searchFor(app, "set_parallel")
-        trs = [[index, TrEnum.SET_PARALLEL, 0] for index in trs]
+            trs = searchFor(app, "set_parallel")
+            trs = [[index, TrEnum.SET_PARALLEL, 0] for index in trs]
 
-        trs = trs[::-1]
-        tmp = []
-        for t in trs:
-            tmp.append( [getDepth(app, t[0]), t] )
-        tmp.sort()
-        trs = [tmp[-1][1]]
+            trs = trs[::-1]
+            tmp = []
+            for t in trs:
+                tmp.append( [getDepth(app, t[0]), t] )
+            tmp.sort()
+            trs = [tmp[-1][1]]
 
-        for t in trs:
+            for t in trs:
+                scops[0].reset()
+                scops[0].transform_list(full_tr_list)
+                valid = scops[0].transform_list([t])
+                if valid[-1]:
+                    full_tr_list.append(t)
             scops[0].reset()
-            scops[0].transform_list(full_tr_list)
-            valid = scops[0].transform_list([t])
-            if valid[-1]:
-                full_tr_list.append(t)
-        scops[0].reset()
-        valid = scops[0].transform_list(full_tr_list)
+            valid = scops[0].transform_list(full_tr_list)
 
-        tiled = app.generate_code(alt_infix="_tiled", ephemeral=True)
-        tiled.compile()
+            tiled = app.generate_code(alt_infix="_tiled", ephemeral=True)
+            tiled.compile()
 
-        improved = tiled.measure()
-        print("Time with parallel: %f (%.3fx speedup)" % (improved, self.evaluations["[]"]/improved))
+            improved = tiled.measure()
+            print("Time with parallel: %f (%.3fx speedup)" % (improved, self.evaluations["[]"]/improved))
 
 
-        print("FINAL transformation_list=[")
-        [print("   %s," % str(t)) for t in full_tr_list]
-        print("]")
+            print("FINAL transformation_list=[")
+            [print("   %s," % str(t)) for t in full_tr_list]
+            print("]")
+        except ValueError:
+            print("[ERROR TRYING TO PARALLEL]", self.best_individual)
 
         #
         # </ use parellel in the final model >
