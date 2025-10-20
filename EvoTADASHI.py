@@ -114,14 +114,15 @@ class Individual:
 
     def generateCode(self, app_factory):
         try:
+            valid = "not checked for validity"
             app = app_factory.generate_code(populate_scops=True)
             scops = app.scops[0]
-            scops.transform_list(self.operation_list)
+            valid = scops.transform_list(self.operation_list)
             tapp = app.generate_code()
             tapp.compile()
             return tapp
         except:
-            print("[ERROR GENERATING CODE] -- ", str(self) )
+            print("[ERROR GENERATING CODE] -- %s -- %s " % (str(valid) , str(self)) )
             assert False
             #return app_factory
 
