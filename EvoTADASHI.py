@@ -112,7 +112,7 @@ class Individual:
         """
         return self.getFitness() > other.getFitness()
 
-    def generateCode(self, app_factory):
+    def generateCode(self, app_factory, evaluations = {}):
         try:
             valid = "not checked for validity"
             app = app_factory.generate_code(populate_scops=True)
@@ -123,8 +123,9 @@ class Individual:
             return tapp
         except:
             print("[ERROR GENERATING CODE] -- %s -- %s " % (str(valid) , str(self)) )
-            assert False
-            #return app_factory
+            evaluations[str(self)] = -9999
+            #assert False
+            return app_factory
 
     def getFitness(
         self, app_factory=None, n_trials: int = None, timeout=9999, evaluations=None
@@ -404,7 +405,7 @@ class EvolTadashi:
                         multiProcess_fitnessEval,
                         [
                             (
-                                ind.generateCode(self.app_factory),
+                                ind.generateCode(self.app_factory, self.evaluations), #sending evals as a tmp fix
                                 self.n_trials,
                                 self.timeout,
                                 (
