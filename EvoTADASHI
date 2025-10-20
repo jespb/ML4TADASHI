@@ -12,8 +12,9 @@ import tadashi
 from tadashi import TRANSFORMATIONS, LowerUpperBound, Scops, TrEnum
 from tadashi.apps import Polybench, Simple
 
-####
-####
+#
+# <functions for heuristic mode>
+#
 def getDepth_aux(node, depth=0):
     cl = node.children
     if len(cl) == 0:
@@ -36,20 +37,32 @@ def searchFor(app, tr_name):
             if t == tr_name:
                 ret.append(si)
     return ret
-####
-####
+#
+# </functions for heuristic mode>
+#
+
 
 def random_args(node, tr):
+    """
+    Get random arguments for the transformation
+    Tiling is done using a number from [8, 16, 32, 64]
+    Other transformation use a random number from -64 to 64
+    """
     tiles = [TrEnum.TILE1D, TrEnum.TILE2D, TrEnum.TILE3D]
     if tr in tiles:
         tile_size = choice([2**x for x in range(3, 7)])
         return [tile_size] * (1 + tiles.index(tr))
-    if tr in [TrEnum.SET_PARALLEL]:
-        return [0]
     return choice(node.get_args(tr, start=-64, end=64))
 
 
 def multiProcess_fitnessEval(a):
+    """
+    EvoTADASHI Model evaluation using multiprocessing
+    app: app
+    trials: number of trials
+    timeout: timeout for each trial
+    pre_evaluated: dictionary with previous models fitnesses (if the model is present, evaluation is skipped)
+    """
     app, trials, timeout, pre_evaluated = a
     
     if pre_evaluated != 0:
@@ -67,6 +80,13 @@ def multiProcess_fitnessEval(a):
     return -1 * min(evals)
 
 
+
+
+
+
+
+
+
 class Individual:
     operation_list: list = None
     fitness: float = None
@@ -79,9 +99,9 @@ class Individual:
         tmp = "["
         for op in self.operation_list:
             tmp += "[%s, %s, %s], " % (
-                str(op[0:2]),
-                "tadashi.TrEnum." + op[2].name,
-                str(op[3:]),
+                str(op[0]),
+                "tadashi.TrEnum." + op[1].name,
+                str(op[2:]),
             )
         tmp += "]"
         return "%s --- %s" % (tmp, f)
@@ -95,13 +115,15 @@ class Individual:
     def generateCode(self, app_factory):
         try:
             app = app_factory.generate_code(populate_scops=True)
-            app.transform_list(self.operation_list)
+            scops = app.scops[0]
+            scops.transform_list(self.operation_list)
             tapp = app.generate_code()
             tapp.compile()
             return tapp
         except:
-            print("[ERROR GENERATING CODE] -- RETURNING BASE -- ", self)
-            return app_factory
+            print("[ERROR GENERATING CODE] -- ", str(self) )
+            assert False
+            #return app_factory
 
     def getFitness(
         self, app_factory=None, n_trials: int = None, timeout=9999, evaluations=None
@@ -131,18 +153,14 @@ class Individual:
 
         if not evaluations is None:
             evaluations[str(self.operation_list)] = self.fitness
+
         return self.fitness
 
     def isLegal(self, app_factory=None):
         app = app_factory.generate_code(populate_scops=True)
-        try:
-            return app.transform_list(self.operation_list)
-        except ValueError:
-            # If the transform_list fails, its not a valid list
-            return False
-        except OSError:
-            print("[ERROR CHECKING LEGALITY] -- ",self)
-            return False
+        scops = app.scops[0]
+        valid = scops.transform_list(self.operation_list)
+        return sum([0 if v else 1 for v in valid]) == 0
 
     def crossover(self, other, app_factory=None):
         # 20% chance to crossover, 0% if either parents have length 0
@@ -164,10 +182,8 @@ class Individual:
 
             ret = []
             for i in [i1, i2]:
-                # print(">> XO")
                 if i.isLegal(app_factory):
                     ret.append(i)
-                # print("<< XO")
 
             return ret
 
@@ -175,7 +191,6 @@ class Individual:
             return [self, other]
 
     def mutate(self, app_factory=None):
-        app = app_factory.generate_code(populate_scops=True)
         # 10% not mutate
         # 10% lose last operation or not mutate
         # 80% of appending a new operation at the end
@@ -192,37 +207,32 @@ class Individual:
             return ret if ret.isLegal(app_factory) else None
 
         if mutationType > 1:
+            app = app_factory.generate_code(populate_scops=True)
+            app.transform_list(self.operation_list)
 
             found = False
             op_list = self.operation_list[:]
-
-            try:
-                app.transform_list(self.operation_list)
-            except:
-                return self
-
-            scops = app.scops
+        
+            scops = app.scops[0]
 
             # print("Mutating 1")
             at = 0
             while not found:
                 at += 1
                 # print("Trying to find valid mut")
-                x1 = randint(0, len(scops) - 1)
-                st = scops[x1].schedule_tree
+                st = scops.schedule_tree
                 x2 = randint(0, len(st) - 1)
                 node = st[x2]
 
                 possible = node.available_transformations
-                #possible = [p for p in possible if p[1]!=TrEnum.SET_PARALLEL]
-                #[print(str(p)) for p in possible]
+
                 possible = [p for p in possible if not ("parallel" in p or "shift" in p) ]
 
                 if len(possible) > 0:
                     tran = possible[randint(0, len(possible) - 1)]
                     args = random_args(node, tran)
 
-                    op = [x1, x2, tran, *args]
+                    op = [x2, tran, *args]
 
                     tmp_op = op_list[:]
                     tmp_op.append(op)
@@ -237,6 +247,12 @@ class Individual:
             # print("Found MUT after %d attempts" % at)
 
             return ret
+
+
+
+
+
+
 
 
 class EvolTadashi:
@@ -267,9 +283,10 @@ class EvolTadashi:
         # The initial population is an individual without transformations
         # so the algorithm starts by searching for simpler solutions first
 
-        ########
-        ########
-        ########
+
+        #
+        # <heuristic initialization>
+        #
 
         app = self.app_factory_mini
 
@@ -317,15 +334,14 @@ class EvolTadashi:
                 full_tr_list.append(t)
         scops[0].reset()
 
-        ########
-        ########
-        ########
+
+        #
+        # </heuristic initialization>
+        #
 
 
         self.population = [Individual()]
 
-        #####
-        #####
 
         if self.use_heuristic:
             full_tr_list = [ [0]+t for t in full_tr_list]
@@ -341,8 +357,6 @@ class EvolTadashi:
             else:
                 print("sus")
 
-        #####
-        #####
 
         self.population_size = population_size
         self.max_gen = max_gen
@@ -375,10 +389,6 @@ class EvolTadashi:
 
         for gen in range(self.max_gen):
             print("Gen %d" % gen)
-
-            # print("  Calc fitness")
-            # [i.getFitness( self.app_factory, self.n_trials, timeout=self.timeout ) for i in self.population]
-            # self.population.sort(reverse=True)
 
             start_time = time.time()
             if self.n_threads > 1:
@@ -455,8 +465,9 @@ class EvolTadashi:
 
         print("Final model:", self.best_individual)
 
-        ########
-        ########
+        #
+        # < use parellel in the final model >
+        #
 
         full_tr_list = [t[1:] for t in  self.best_individual.operation_list]
 
@@ -494,8 +505,15 @@ class EvolTadashi:
         [print("   %s," % str(t)) for t in full_tr_list]
         print("]")
 
-        ########
-        ########
+        #
+        # </ use parellel in the final model >
+        #
+
+
+
+
+
+
 
 
 def main(args):
@@ -526,6 +544,7 @@ def main(args):
 
 if __name__ == "__main__":
     pb = Polybench.get_benchmarks()
+    # Polybench ordered from lower to highest evaluation time
     pb = ['jacobi-1d', 'bicg', 'atax', 'gesummv', 'trisolv', 'durbin', 'mvt', 'gemver', 'deriche', 'doitgen', 'gemm', 'syrk', '2mm', 'trmm', 'symm', 'jacobi-2d', 'fdtd-2d', 'cholesky', 'syr2k', '3mm', 'correlation', 'covariance', 'heat-3d', 'gramschmidt', 'ludcmp', 'lu', 'nussinov', 'adi', 'floyd-warshall', 'seidel-2d']
     for benchmark in pb:
         print("\n\n\n")
@@ -539,7 +558,6 @@ if __name__ == "__main__":
         parser.add_argument("--n-trails", type=int, default=2)
         parser.add_argument("--n-threads", type=int, default=10)
         parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
-        #print(str(parser))
         args = parser.parse_args()
         print(str(args) + "\n")
         main(args)
