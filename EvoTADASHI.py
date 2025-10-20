@@ -90,6 +90,7 @@ def multiProcess_fitnessEval(a):
 class Individual:
     operation_list: list = None
     fitness: float = None
+    broken = False
 
     def __init__(self, op: list = []):
         self.operation_list = op
@@ -124,6 +125,7 @@ class Individual:
         except:
             print("[ERROR GENERATING CODE] -- %s -- %s " % (str(valid) , str(self)) )
             evaluations[str(self)] = -9999
+            self.broken = True
             #assert False
             return app_factory
 
@@ -231,6 +233,7 @@ class Individual:
                     st = scops.schedule_tree
                 except ValueError:
                     print("[VALUE ERROR ACESSING ST on %d attempt of mutation] -- " % at, self)
+                    self.broken = True
                     return self
 
                 x2 = randint(0, len(st) - 1)
@@ -439,6 +442,8 @@ class EvolTadashi:
                 ]
 
             self.population.sort(reverse=True)
+
+            self.population = [p for p in self.population if not p.broken]
 
             end_time = time.time()
             print("Evaluation time:", end_time - start_time)
