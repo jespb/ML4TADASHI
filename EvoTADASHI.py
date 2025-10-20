@@ -234,6 +234,7 @@ class Individual:
                     args = random_args(node, tran)
 
                     op = [x2, tran, *args]
+                    print("IN MUT", op)
 
                     tmp_op = op_list[:]
                     tmp_op.append(op)
