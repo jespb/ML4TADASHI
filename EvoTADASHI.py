@@ -208,12 +208,13 @@ class Individual:
 
         if mutationType > 1:
             app = app_factory.generate_code(populate_scops=True)
-            app.transform_list(self.operation_list)
+            scops = app.scops[0]
+
+            scops.transform_list(self.operation_list)
 
             found = False
             op_list = self.operation_list[:]
-        
-            scops = app.scops[0]
+            
 
             # print("Mutating 1")
             at = 0
