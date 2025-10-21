@@ -214,6 +214,7 @@ class Individual:
             ret = Individual(op_list)
             return ret if ret.isLegal(app_factory) else None
 
+        # Appends a transformation to the end of the list
         if mutationType > 1:
             app = app_factory.generate_code(populate_scops=True)
             scops = app.scops[0]
@@ -223,12 +224,7 @@ class Individual:
             found = False
             op_list = self.operation_list[:]
             
-
-            # print("Mutating 1")
-            at = 0
             while not found:
-                at += 1
-                # print("Trying to find valid mut")
                 st = scops.schedule_tree
 
                 x2 = randint(0, len(st) - 1)
@@ -236,7 +232,7 @@ class Individual:
 
                 possible = node.available_transformations
 
-                possible = [p for p in possible if not ("parallel" in p or "shift" in p) ]
+                possible = [p for p in possible if not ("parallel" in p) ]
 
                 if len(possible) > 0:
                     tran = possible[randint(0, len(possible) - 1)]
@@ -255,7 +251,6 @@ class Individual:
                     # print("<<MUT")
 
                     found = legal
-            # print("Found MUT after %d attempts" % at)
 
             return ret
 
@@ -363,10 +358,7 @@ class EvolTadashi:
         for i in range(1,len(full_tr_list)):
             ind = Individual(op=full_tr_list[:1])
             legal = ind.isLegal(self.app_factory)
-            if legal:
-                self.population.append( Individual(op=full_tr_list[:i]) )
-            else:
-                print("sus")
+            self.population.append( Individual(op=full_tr_list[:i]) )
 
 
         self.population_size = population_size
@@ -509,7 +501,7 @@ class EvolTadashi:
             valid = scops[0].transform_list(full_tr_list)
             print(valid)
 
-            tiled = app.generate_code(alt_infix="_tiled", ephemeral=True)
+            tiled = app.generate_code()
             tiled.compile()
 
             improved = tiled.measure()
