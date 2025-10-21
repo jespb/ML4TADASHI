@@ -517,6 +517,7 @@ class EvolTadashi:
                     full_tr_list.append(t)
             scops[0].reset()
             valid = scops[0].transform_list(full_tr_list)
+            print(valid)
 
             tiled = app.generate_code(alt_infix="_tiled", ephemeral=True)
             tiled.compile()
