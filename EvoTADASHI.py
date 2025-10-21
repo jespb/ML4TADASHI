@@ -120,7 +120,7 @@ class Individual:
             app = app_factory.generate_code(populate_scops=True)
             scops = app.scops[0]
             valid = scops.transform_list(self.operation_list)
-            tapp = app.generate_code()
+            tapp = app.generate_code(populate_scops=True)
             tapp.compile()
             return tapp
         except:
@@ -162,7 +162,7 @@ class Individual:
         scops = app.scops[0]
         try:
             valid = scops.transform_list(self.operation_list)
-            tapp = app.generate_code()
+            tapp = app.generate_code(populate_scops=True)
             tapp.compile()
             # At least one operation is not valid
             return sum([0 if v else 1 for v in valid]) == 0
@@ -212,7 +212,7 @@ class Individual:
         if mutationType == 1:
             op_list = self.operation_list[:-1]
             ret = Individual(op_list)
-            return ret if ret.isLegal(app_factory) else None
+            return ret if ret.isLegal(app_factory) else self
 
         # Appends a transformation to the end of the list
         if mutationType > 1:
@@ -512,7 +512,7 @@ class EvolTadashi:
             valid = scops[0].transform_list(full_tr_list)
             print(valid)
 
-            tiled = app.generate_code()
+            tiled = app.generate_code(populate_scops=True)
             tiled.compile()
 
             improved = tiled.measure()
