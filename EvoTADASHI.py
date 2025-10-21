@@ -122,7 +122,6 @@ class Individual:
             scops = app.scops[0]
             valid = scops.transform_list(self.operation_list)
             tapp = app.generate_code(populate_scops=True)
-            tapp.reset_scops()
             tapp.compile()
             return tapp
         except:
@@ -166,7 +165,6 @@ class Individual:
         try:
             valid = scops.transform_list(self.operation_list)
             tapp = app.generate_code(populate_scops=True)
-            tapp.reset_scops()
             tapp.compile()
             # At least one operation is not valid
             return sum([0 if v else 1 for v in valid]) == 0
