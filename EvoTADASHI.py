@@ -573,7 +573,7 @@ if __name__ == "__main__":
     pb = Polybench.get_benchmarks()
     # Polybench ordered from lower to highest evaluation time
     pb = ['jacobi-1d', 'bicg', 'atax', 'gesummv', 'trisolv', 'durbin', 'mvt', 'gemver', 'deriche', 'doitgen', 'gemm', 'syrk', '2mm', 'trmm', 'symm', 'jacobi-2d', 'fdtd-2d', 'cholesky', 'syr2k', '3mm', 'correlation', 'covariance', 'heat-3d', 'gramschmidt', 'ludcmp', 'lu', 'nussinov', 'adi', 'floyd-warshall', 'seidel-2d']
-    pb = pb[1:]
+    pb = pb[3:]
     for benchmark in pb:
         print("\n\n\n")
         parser = argparse.ArgumentParser()
