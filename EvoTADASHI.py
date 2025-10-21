@@ -11,6 +11,7 @@ import multiprocess as mp
 import tadashi
 from tadashi import TRANSFORMATIONS, LowerUpperBound, Scops, TrEnum
 from tadashi.apps import Polybench, Simple
+from subprocess import CalledProcessError
 
 #
 # <functions for heuristic mode>
@@ -126,7 +127,7 @@ class Individual:
             print("[ERROR GENERATING CODE] -- %s -- %s " % (str(valid) , str(self)) )
             evaluations[str(self)] = -9999
             self.broken = True
-            #assert False
+            assert False
             return app_factory
 
     def getFitness(
