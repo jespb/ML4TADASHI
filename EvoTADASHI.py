@@ -221,39 +221,42 @@ class Individual:
 
             scops.transform_list(self.operation_list)
 
-            found = False
             op_list = self.operation_list[:]
             
+            st = scops.schedule_tree
+
+            possible = []
+            for x2 in range(len(st)):
+                node = st[x2]
+                possible.extend( [ (x2, p) for p in node.available_transformations ] )
+
+            possible = [p for p in possible if not ("parallel" in p[1] or "shift" in p[1]) ]
+
+            if len(possible) == 0:
+                return self
+
             at = 0
+            found = False
             max_attempts = 10
             while not found and max_attempts<=10:
                 at += 1
-                st = scops.schedule_tree
+                
+                x2, tran = possible[randint(0, len(possible) - 1)]
+                args = random_args(node, tran)
 
-                x2 = randint(0, len(st) - 1)
-                node = st[x2]
+                op = [x2, tran, *args]
+                #print("IN MUT", op)
 
-                possible = node.available_transformations
+                tmp_op = op_list[:]
+                tmp_op.append(op)
 
-                possible = [p for p in possible if not ("parallel" in p or "shift" in p) ]
+                ret = Individual(tmp_op)
 
-                if len(possible) > 0:
-                    tran = possible[randint(0, len(possible) - 1)]
-                    args = random_args(node, tran)
+                # print(">>MUT")
+                legal = ret.isLegal(app_factory)
+                # print("<<MUT")
 
-                    op = [x2, tran, *args]
-                    #print("IN MUT", op)
-
-                    tmp_op = op_list[:]
-                    tmp_op.append(op)
-
-                    ret = Individual(tmp_op)
-
-                    # print(">>MUT")
-                    legal = ret.isLegal(app_factory)
-                    # print("<<MUT")
-
-                    found = legal
+                found = legal
 
             if max_attempts > 10:
                 print("Mutation failed after 100 attempts")
