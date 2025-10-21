@@ -242,6 +242,7 @@ class Individual:
                 at += 1
                 
                 x2, tran = possible[randint(0, len(possible) - 1)]
+                node = st[x2]
                 args = random_args(node, tran)
 
                 op = [x2, tran, *args]
