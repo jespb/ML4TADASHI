@@ -118,9 +118,11 @@ class Individual:
         try:
             valid = "not checked for validity"
             app = app_factory.generate_code(populate_scops=True)
+            app.reset_scops()
             scops = app.scops[0]
             valid = scops.transform_list(self.operation_list)
             tapp = app.generate_code(populate_scops=True)
+            tapp.reset_scops()
             tapp.compile()
             return tapp
         except:
@@ -159,10 +161,12 @@ class Individual:
 
     def isLegal(self, app_factory=None):
         app = app_factory.generate_code(populate_scops=True)
+        app.reset_scops()
         scops = app.scops[0]
         try:
             valid = scops.transform_list(self.operation_list)
             tapp = app.generate_code(populate_scops=True)
+            tapp.reset_scops()
             tapp.compile()
             # At least one operation is not valid
             return sum([0 if v else 1 for v in valid]) == 0
@@ -217,6 +221,7 @@ class Individual:
         # Appends a transformation to the end of the list
         if mutationType > 1:
             app = app_factory.generate_code(populate_scops=True)
+            app.reset_scops()
             scops = app.scops[0]
 
             scops.transform_list(self.operation_list)
@@ -489,6 +494,7 @@ class EvolTadashi:
             full_tr_list = self.best_individual.operation_list
 
             app = self.app_factory
+            app.reset_scops()
             scops = app.scops
             valid = scops[0].transform_list(full_tr_list)
 
