@@ -140,23 +140,14 @@ class Individual:
             self.fitness = evaluations[str(self.operation_list)]
 
         if self.fitness is None:
-            try:
-                app = self.generateCode(app_factory)
-                evals = []
-                for _ in range(n_trials):
-                    try:
-                        evals.append(app.measure(timeout=timeout))
-                    except TimeoutExpired:
-                        # If the evaluations takes too long, it gets a bad fitness
-                        evals.append(timeout)
-                    except OSError:
-                        # ???
-                        self.broken = True
-                        evals.append(timeout)
-            except CalledProcessError:
-                print("[ERROR GET FITNESS ST] -- ", self.isLegal(app_factory), "--", str(self))
-                evals = [timeout]
-                self.broken = True
+            app = self.generateCode(app_factory)
+            evals = []
+            for _ in range(n_trials):
+                try:
+                    evals.append(app.measure(timeout=timeout))
+                except TimeoutExpired:
+                    # If the evaluations takes too long, it gets a bad fitness
+                    evals.append(timeout)
 
             # multiplied by -1 so fitness is meant to be maximized
             self.fitness = -1 * min(evals)
@@ -171,8 +162,11 @@ class Individual:
         scops = app.scops[0]
         try:
             valid = scops.transform_list(self.operation_list)
+            tapp = app.generate_code()
+            tapp.compile()
+            # At least one operation is not valid
             return sum([0 if v else 1 for v in valid]) == 0
-        except ValueError:
+        except:
             # If it cant transform, its not valid
             return False
 
@@ -235,12 +229,7 @@ class Individual:
             while not found:
                 at += 1
                 # print("Trying to find valid mut")
-                try:
-                    st = scops.schedule_tree
-                except ValueError:
-                    print("[VALUE ERROR ACESSING ST on %d attempt of mutation] -- " % at, self)
-                    self.broken = True
-                    return self
+                st = scops.schedule_tree
 
                 x2 = randint(0, len(st) - 1)
                 node = st[x2]
