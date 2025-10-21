@@ -224,7 +224,9 @@ class Individual:
             found = False
             op_list = self.operation_list[:]
             
-            while not found:
+            at = 0
+            while not found and at<=100:
+                at += 1
                 st = scops.schedule_tree
 
                 x2 = randint(0, len(st) - 1)
@@ -251,6 +253,10 @@ class Individual:
                     # print("<<MUT")
 
                     found = legal
+
+            if at > 100:
+                print("Mutation failed after 100 attempts")
+                return self
 
             return ret
 
