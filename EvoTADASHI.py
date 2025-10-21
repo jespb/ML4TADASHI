@@ -232,7 +232,7 @@ class Individual:
 
                 possible = node.available_transformations
 
-                possible = [p for p in possible if not ("parallel" in p) ]
+                possible = [p for p in possible if not ("parallel" in p or "shift" in p) ]
 
                 if len(possible) > 0:
                     tran = possible[randint(0, len(possible) - 1)]
