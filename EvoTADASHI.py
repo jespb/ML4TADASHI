@@ -238,10 +238,10 @@ class Individual:
             at = 0
             found = False
             max_attempts = 10
-            while not found and max_attempts<=10:
+            while not found and max_attempts<=10 and len(possible)>0:
                 at += 1
                 
-                x2, tran = possible[randint(0, len(possible) - 1)]
+                x2, tran = possible.pop( randint(0, len(possible) - 1) )
                 node = st[x2]
                 args = random_args(node, tran)
 
@@ -253,14 +253,14 @@ class Individual:
 
                 ret = Individual(tmp_op)
 
-                # print(">>MUT")
+                #print(">>MUT")
                 legal = ret.isLegal(app_factory)
-                # print("<<MUT")
+                #print("<<MUT")
 
                 found = legal
 
-            if max_attempts > 10:
-                print("Mutation failed after 100 attempts")
+            if found == False:
+                print("Mutation failed (attempts: %d, remaining possibilities: %d)" % (at, len(possible)))
                 return self
 
             return ret
