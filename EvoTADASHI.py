@@ -121,7 +121,7 @@ class Individual:
             app.reset_scops()
             scops = app.scops[0]
             valid = scops.transform_list(self.operation_list)
-            tapp = app.generate_code(populate_scops=True)
+            tapp = app.generate_code()
             tapp.compile()
             return tapp
         except:
@@ -164,7 +164,7 @@ class Individual:
         scops = app.scops[0]
         try:
             valid = scops.transform_list(self.operation_list)
-            tapp = app.generate_code(populate_scops=True)
+            tapp = app.generate_code()
             tapp.compile()
             # At least one operation is not valid
             return sum([0 if v else 1 for v in valid]) == 0
@@ -516,7 +516,7 @@ class EvolTadashi:
             valid = scops[0].transform_list(full_tr_list)
             print(valid)
 
-            tiled = app.generate_code(populate_scops=True)
+            tiled = app.generate_code()
             tiled.compile()
 
             improved = tiled.measure()
