@@ -241,7 +241,7 @@ class Individual:
             at = 0
             found = False
             max_attempts = 10
-            while not found and max_attempts<=10 and len(possible)>0:
+            while not found and at<=max_attempts and len(possible)>0:
                 at += 1
                 
                 x2, tran = possible.pop( randint(0, len(possible) - 1) )
@@ -251,23 +251,18 @@ class Individual:
                 op = [x2, tran, *args]
                 #print("IN MUT", op)
 
-                tmp_op = op_list[:]
-                tmp_op.append(op)
+                if st[x2].transform(tran, *args):
+                    tmp_op = op_list[:]
+                    tmp_op.append(op)
+                    return Individual(tmp_op)
+                else:
+                    st[x2].rollback()
 
-                ret = Individual(tmp_op)
 
-                #print(">>MUT")
-                legal = ret.isLegal(app_factory)
-                #print("<<MUT")
+            print("Mutation failed (attempts: %d, remaining possibilities: %d)" % (at, len(possible)))
+            return self
 
-                found = legal
-
-            if found == False:
-                print("Mutation failed (attempts: %d, remaining possibilities: %d)" % (at, len(possible)))
-                return self
-
-            return ret
-
+            
 
 
 
