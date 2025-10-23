@@ -162,11 +162,9 @@ class Individual:
             valid = scops.transform_list(self.operation_list)
             tapp = app.generate_code()
             tapp.compile()
-            app.reset_scops()
             # At least one operation is not valid
             return sum([0 if v else 1 for v in valid]) == 0
         except:
-            app.reset_scops()
             # If it cant transform, its not valid
             return False
 
@@ -220,9 +218,9 @@ class Individual:
             app.reset_scops()
             scops = app.scops[0]
 
-            scops.transform_list(self.operation_list)
-
             op_list = self.operation_list[:]
+            
+            scops.transform_list(op_list)
 
             st = scops.schedule_tree
 
@@ -234,9 +232,6 @@ class Individual:
             possible = [
                 p for p in possible if not ("parallel" in p[1] or "shift" in p[1])
             ]
-
-            if len(possible) == 0:
-                return self
 
             at = 0
             found = False
@@ -251,7 +246,8 @@ class Individual:
                 op = [x2, tran, *args]
                 # print("IN MUT", op)
 
-                if st[x2].transform(tran, *args):
+                valid = st[x2].transform(tran, *args)
+                if valid:
                     tmp_op = op_list[:]
                     tmp_op.append(op)
                     return Individual(tmp_op)
