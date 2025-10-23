@@ -522,7 +522,7 @@ def main(args):
     print(f"Using {dataset}")
     app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
     app_factory.compile()
-    timeout = timeit.timeit(app_factory.measure(), number=1) * 2
+    timeout = timeit.timeit(app_factory.measure, number=1) * 2
 
     print("USING TIME LIMIT:", timeout)
     m = EvolTadashi(
@@ -584,7 +584,7 @@ if __name__ == "__main__":
             "floyd-warshall",
             "seidel-2d",
         ]
-        pb = pb[3:]
+        pb = pb[:]
         for benchmark in pb:
             print("\n\n\n")
             args.benchmark = benchmark
