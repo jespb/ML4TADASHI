@@ -562,37 +562,28 @@ def main(args):
 
 
 if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--benchmark", type=str, default=benchmark)
+    parser.add_argument("--dataset", type=str, default="EXTRALARGE")
+    parser.add_argument("--oflag", type=int, default=3)
+    parser.add_argument("--seed", type=int, default=47)
+    parser.add_argument("--population-size", type=int, default=50)
+    parser.add_argument("--max-gen", type=int, default=10)
+    parser.add_argument("--n-trails", type=int, default=2)
+    parser.add_argument("--n-threads", type=int, default=1)
+    parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
+    args = parser.parse_args()
+    print(str(args) + "\n")
+
+
     all_ = True
+
     if all_: 
         pb = ['jacobi-1d', 'bicg', 'atax', 'gesummv', 'trisolv', 'durbin', 'mvt', 'gemver', 'deriche', 'doitgen', 'gemm', 'syrk', '2mm', 'trmm', 'symm', 'jacobi-2d', 'fdtd-2d', 'cholesky', 'syr2k', '3mm', 'correlation', 'covariance', 'heat-3d', 'gramschmidt', 'ludcmp', 'lu', 'nussinov', 'adi', 'floyd-warshall', 'seidel-2d']
-        pb = pb[3:]
         for benchmark in pb:
             print("\n\n\n")
-            parser = argparse.ArgumentParser()
-            parser.add_argument("--benchmark", type=str, default=benchmark)
-            parser.add_argument("--dataset", type=str, default="EXTRALARGE")
-            parser.add_argument("--oflag", type=int, default=3)
-            parser.add_argument("--seed", type=int, default=47)
-            parser.add_argument("--population-size", type=int, default=50)
-            parser.add_argument("--max-gen", type=int, default=10)
-            parser.add_argument("--n-trails", type=int, default=2)
-            parser.add_argument("--n-threads", type=int, default=1)
-            parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
-            args = parser.parse_args()
-            print(str(args) + "\n")
             main(args)
     else:
-        parser = argparse.ArgumentParser()
-        parser.add_argument("--benchmark", type=str, default="gemm")
-        parser.add_argument("--dataset", type=str, default="EXTRALARGE")
-        parser.add_argument("--oflag", type=int, default=3)
-        parser.add_argument("--seed", type=int, default=47)
-        parser.add_argument("--population-size", type=int, default=50)
-        parser.add_argument("--max-gen", type=int, default=10)
-        parser.add_argument("--n-trails", type=int, default=2)
-        parser.add_argument("--n-threads", type=int, default=1)
-        parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
-        args = parser.parse_args()
-        print(str(args) + "\n")
         main(args)
 
