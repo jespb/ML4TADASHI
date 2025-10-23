@@ -289,11 +289,9 @@ class EvolTadashi:
         t_size=2,
         n_threads=1,
         timeout=9999,
-        use_heuristic = False,
-        app_factory_mini = None
+        use_heuristic = False
     ):
         self.app_factory = app_factory
-        self.app_factory_mini = app_factory_mini
         self.use_heuristic = use_heuristic
         # The initial population is an individual without transformations
         # so the algorithm starts by searching for simpler solutions first
@@ -303,7 +301,7 @@ class EvolTadashi:
         # <heuristic initialization>
         #
 
-        app = self.app_factory_mini
+        app = self.app_factory
 
         full_tr_list = []
 
@@ -458,10 +456,10 @@ class EvolTadashi:
                 ind1 = self.tournament()
                 ind2 = self.tournament()
                 # print("	MUT")
-                ind1 = ind1.mutate(self.app_factory_mini)
-                ind2 = ind2.mutate(self.app_factory_mini)
+                ind1 = ind1.mutate(self.app_factory)
+                ind2 = ind2.mutate(self.app_factory)
                 # print("	XO")
-                ret = ind1.crossover(ind2, self.app_factory_mini)
+                ret = ind1.crossover(ind2, self.app_factory)
                 new_pop.extend(ret)
             new_pop = new_pop[: self.population_size]
 
@@ -544,8 +542,6 @@ def main(args):
     app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
     app_factory.compile()
     timeout = timeit.timeit(app_factory.measure, number=1) * 2
-    app_factory_mini = Polybench(args.benchmark, compiler_options=["-DSMALL", oflag])
-    app_factory_mini.compile()
 
     print("USING TIME LIMIT:", timeout)
     m = EvolTadashi(
@@ -556,7 +552,6 @@ def main(args):
         n_threads=args.n_threads,
         use_heuristic = args.use_heuristic,
         timeout=timeout,
-        app_factory_mini = app_factory_mini,
     )
     m.fit()
 
