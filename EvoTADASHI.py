@@ -522,7 +522,7 @@ def main(args):
     print(f"Using {dataset}")
     app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
     app_factory.compile()
-    timeout = timeit.timeit(app_factory.measure, number=1) * 2
+    timeout = timeit.timeit(app_factory.measure(), number=1) * 2
 
     print("USING TIME LIMIT:", timeout)
     m = EvolTadashi(
@@ -546,7 +546,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=47)
     parser.add_argument("--population-size", type=int, default=50)
     parser.add_argument("--max-gen", type=int, default=10)
-    parser.add_argument("--n-trails", type=int, default=2)
+    parser.add_argument("--n-trails", type=int, default=5)
     parser.add_argument("--n-threads", type=int, default=1)
     parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
