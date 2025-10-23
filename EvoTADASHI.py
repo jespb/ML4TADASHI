@@ -162,9 +162,11 @@ class Individual:
             valid = scops.transform_list(self.operation_list)
             tapp = app.generate_code()
             tapp.compile()
+            app.reset_scops()
             # At least one operation is not valid
             return sum([0 if v else 1 for v in valid]) == 0
         except:
+            app.reset_scops()
             # If it cant transform, its not valid
             return False
 
@@ -549,7 +551,7 @@ if __name__ == "__main__":
     parser.add_argument("--population-size", type=int, default=50)
     parser.add_argument("--max-gen", type=int, default=10)
     parser.add_argument("--n-trails", type=int, default=5)
-    parser.add_argument("--n-threads", type=int, default=1)
+    parser.add_argument("--n-threads", type=int, default=2)
     parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
