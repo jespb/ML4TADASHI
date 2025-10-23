@@ -439,6 +439,7 @@ class EvolTadashi:
                 print("  Updating best_individual to", self.best_individual)
 
             # print("  Breeding phase")
+            start_time = time.time()
             new_pop = []
             while len(new_pop) < self.population_size:
                 # print("Breeding %d"%len(new_pop))
@@ -451,8 +452,9 @@ class EvolTadashi:
                 ret = ind1.crossover(ind2, self.app_factory)
                 new_pop.extend(ret)
             new_pop = new_pop[: self.population_size]
-
             self.population = new_pop
+            end_time = time.time()
+            print("Breeding time:", end_time - start_time)
 
             be = self.evaluations[str(self.best_individual.operation_list)]
             print(
