@@ -540,7 +540,7 @@ def main(args):
 if __name__ == "__main__":
     all_ = True
     parser = argparse.ArgumentParser()
-    parser.add_argument("--benchmark", type=str, default=benchmark)
+    parser.add_argument("--benchmark", type=str, default="gemm")
     parser.add_argument("--dataset", type=str, default="LARGE")
     parser.add_argument("--oflag", type=int, default=3)
     parser.add_argument("--seed", type=int, default=47)
