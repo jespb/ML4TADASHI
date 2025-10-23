@@ -248,9 +248,8 @@ class Individual:
 
                 valid = st[x2].transform(tran, *args)
                 if valid:
-                    tmp_op = op_list[:]
-                    tmp_op.append(op)
-                    return Individual(tmp_op)
+                    op_list.append(op)
+                    return Individual(op_list)
                 else:
                     st[x2].rollback()
 
