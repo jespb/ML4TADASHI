@@ -81,7 +81,7 @@ def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
         node = scop.schedule_tree[x2]
         tran = possible[i][1]
         args = random_args(node, tran)
-        possible[i] = [node, tran, *args]
+        possible[i] = [x2, tran, *args]
 
 
     # check legality and fetch |beam_width| solution
@@ -168,15 +168,11 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--benchmark", type=str, default="all")
+    parser.add_argument("--benchmark", type=str, default="jacobi-1")
     parser.add_argument("--dataset", type=str, default="LARGE")
     parser.add_argument("--oflag", type=int, default=3)
     parser.add_argument("--seed", type=int, default=47)
-    parser.add_argument("--population-size", type=int, default=50)
-    parser.add_argument("--max-gen", type=int, default=10)
     parser.add_argument("--n-trails", type=int, default=5)
-    parser.add_argument("--n-threads", type=int, default=2)
-    parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     if args.benchmark == "all":
