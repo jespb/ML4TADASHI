@@ -35,9 +35,9 @@ def getAllPossible(app):
         tmp.append( (si, av) )
 
     ret = []
-    for node, trans in tmp:
+    for x2, trans in tmp:
         for tran in trans:
-            ret.append([node, tran])
+            ret.append([x2, tran])
 
     return ret
 
@@ -77,7 +77,8 @@ def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
 
     # get arguments for possible
     for i in range(len(possible)):
-        node = possible[i][0]
+        x2 = possible[i][0]
+        node = scop.schedule_tree[x2]
         tran = possible[i][1]
         args = random_args(node, tran)
         possible[i] = [node, tran, *args]
