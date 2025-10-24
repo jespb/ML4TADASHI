@@ -93,19 +93,17 @@ def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
 def beam_search(app_factory, timeout=99, beam_width=5, max_depth=6):
 
     # each beam element is (total_score, steps)
-    beams = [(0, [])]
 
-    test_eval = evaluateList(app_factory, [], timeout=timeout)
+    op_list = []
+    baseline_time = evaluateList(app_factory, op_list, timeout=timeout)
+    beams = [(baseline_time, op_list)]
 
-
-    assert False
-    
     for depth in range(max_depth):
         candidates = []
         for score, path in beams:
-            for action, delta in getNextOperation(path):
+            for action in getNextOperation(path):
                 new_path = path + [action]
-                new_score = score + delta
+                new_score = evaluateList(app_factory, new_path, timeout=timeout)
                 candidates.append((new_score, new_path))
         
         # sort candidates by descending score and keep only top beam_width
