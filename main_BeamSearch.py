@@ -122,18 +122,6 @@ def beam_search(app_factory, timeout=99, beam_width=5, max_depth=6):
     return best_score, best_path
 
 
-if __name__ == "__main__":
-    best_score, best_path = beam_search(beam_width=5, max_depth=6)
-    print("\n Best found path:")
-    print("Score:", best_score)
-    print("Steps:", best_path)
-
-
-
-
-
-
-
 
 
 
