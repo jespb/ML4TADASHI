@@ -76,6 +76,7 @@ def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
     app = app_factory.generate_code(populate_scops=True)
     scop = app.scops[0]
     scop.transform_list(op_list)
+    app.compile()
 
     evals = []
     for _ in range(n_trials):
