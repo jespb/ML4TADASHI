@@ -446,7 +446,10 @@ class EvolTadashi:
                 ind1 = ind1.mutate(self.app_factory)
                 ind2 = ind2.mutate(self.app_factory)
                 # print("	XO")
-                ret = ind1.crossover(ind2, self.app_factory)
+                if False:
+                    ret = ind1.crossover(ind2, self.app_factory)
+                else:
+                    ret = [ind1, ind2] # no crossover
                 new_pop.extend(ret)
             new_pop = new_pop[: self.population_size]
             self.population = new_pop
