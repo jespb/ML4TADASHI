@@ -341,9 +341,7 @@ class EvolTadashi:
 
         self.population = [Individual()]
 
-        if self.use_heuristic:
-            full_tr_list = [[0] + t for t in full_tr_list]
-        else:
+        if not self.use_heuristic:
             full_tr_list = []
         print(full_tr_list)
 
