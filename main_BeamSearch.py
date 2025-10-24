@@ -101,7 +101,7 @@ def beam_search(app_factory, timeout=99, beam_width=5, max_depth=6):
     for depth in range(max_depth):
         candidates = []
         for score, path in beams:
-            for action in getNextOperation(path):
+            for action in getNextOperations(path):
                 new_path = path + [action]
                 new_score = evaluateList(app_factory, new_path, timeout=timeout)
                 candidates.append((new_score, new_path))
