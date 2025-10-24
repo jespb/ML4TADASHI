@@ -14,14 +14,31 @@ from tadashi.apps import Polybench, Simple
 
 import random
 
+def random_args(node, tr):
+    """
+    Get random arguments for the transformation
+    Tiling is done using a number from [8, 16, 32, 64]
+    Other transformation use a random number from -64 to 64
+    """
+    tiles = [TrEnum.TILE1D, TrEnum.TILE2D, TrEnum.TILE3D]
+    if tr in tiles:
+        tile_size = choice([2**x for x in range(3, 7)])
+        return [tile_size] * (1 + tiles.index(tr))
+    return choice(node.get_args(tr, start=-64, end=64))
 
 def getAllPossible(app):
     scops = app.scops
-    ret = []
+    tmp = []
     for si in range(len(scops[0].schedule_tree)):
         s = scops[0].schedule_tree[si]
         av = s.available_transformations
-        ret.append( (si, av) )
+        tmp.append( (si, av) )
+
+    ret = []
+    for node, trans in tmp:
+        for tran in trans:
+            ret.append([node, tran])
+
     return ret
 
 
@@ -59,6 +76,11 @@ def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
     random.shuffle(possible)
 
     # get arguments for possible
+    for i in range(len(possible)):
+        node = possible[i][0]
+        tran = possible[i][1]
+        args = random_args(node, tran)
+        possible[i] = [node, tran, *args]
 
 
     # check legality and fetch |beam_width| solution
@@ -101,7 +123,7 @@ def beam_search(app_factory, timeout=99, beam_width=5, max_depth=6):
     for depth in range(max_depth):
         candidates = []
         for score, path in beams:
-            for action in getNextOperations(path):
+            for action in getNextOperations(app_factory, path):
                 new_path = path + [action]
                 new_score = evaluateList(app_factory, new_path, timeout=timeout)
                 candidates.append((new_score, new_path))
