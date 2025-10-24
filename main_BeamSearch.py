@@ -163,9 +163,7 @@ def main(args):
     timeout = timeit.timeit(app_factory.measure, number=1) * 2
 
     best_score, best_path = beam_search(app_factory, timeout=timeout, n_trials = args.n_trials)
-    print("\n Best found path:")
-    print("Score:", best_score)
-    print("Steps:", best_path)
+    print("\nBest found path --", best_score,"--", best_path)
 
 
 
