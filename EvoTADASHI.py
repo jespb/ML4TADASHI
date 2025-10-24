@@ -124,7 +124,7 @@ class Individual:
             print("[ERROR GENERATING CODE] -- %s -- %s " % (str(valid), str(self)))
             evaluations[str(self)] = -9999
             self.broken = True
-            assert False
+            #assert False
             return app_factory
 
     def getFitness(
