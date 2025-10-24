@@ -83,6 +83,9 @@ def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
         args = random_args(node, tran)
         possible[i] = [x2, tran, *args]
 
+    possible = [
+        p for p in possible if not ("parallel" in p[1] )
+    ]
 
     # check legality and fetch |beam_width| solution
     legalSteps = []
@@ -137,7 +140,7 @@ def beam_search(app_factory, timeout=99, beam_width=5, max_depth=6):
         
         print(f"Depth {depth+1}: top {len(beams)} paths")
         for s, p in beams:
-            print(f"  score={s}, path={p}")
+            print(f"  score={s}, path={p}, speedup={baseline_time/s}")
         print("-" * 40)
 
     # Return the best path found
@@ -168,7 +171,7 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--benchmark", type=str, default="jacobi-1")
+    parser.add_argument("--benchmark", type=str, default="jacobi-1d")
     parser.add_argument("--dataset", type=str, default="LARGE")
     parser.add_argument("--oflag", type=int, default=3)
     parser.add_argument("--seed", type=int, default=47)
