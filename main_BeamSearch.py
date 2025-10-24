@@ -148,7 +148,10 @@ def main(args):
     app_factory.compile()
     timeout = timeit.timeit(app_factory.measure, number=1) * 2
 
-    beam_search(app_factory, timeout)
+    best_score, best_path = beam_search(app_factory, timeout)
+    print("\n Best found path:")
+    print("Score:", best_score)
+    print("Steps:", best_path)
 
 
 
