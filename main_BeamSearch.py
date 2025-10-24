@@ -116,12 +116,12 @@ def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
     return -1 * min(evals) 
 
 
-def beam_search(app_factory, timeout=99, beam_width=5, max_depth=6):
+def beam_search(app_factory, n_trials=2, timeout=99, beam_width=5, max_depth=6):
 
     # each beam element is (total_score, steps)
 
     op_list = []
-    baseline_time = evaluateList(app_factory, op_list, timeout=timeout)
+    baseline_time = evaluateList(app_factory, op_list, timeout=timeout, n_trials=n_trials)
     beams = [(baseline_time, op_list)]
 
     for depth in range(max_depth):
@@ -129,7 +129,7 @@ def beam_search(app_factory, timeout=99, beam_width=5, max_depth=6):
         for score, path in beams:
             for action in getNextOperations(app_factory, path):
                 new_path = path + [action]
-                new_score = evaluateList(app_factory, new_path, timeout=timeout)
+                new_score = evaluateList(app_factory, new_path, timeout=timeout, n_trials=n_trials)
                 candidates.append((new_score, new_path))
         
         # sort candidates by descending score and keep only top beam_width
@@ -138,10 +138,10 @@ def beam_search(app_factory, timeout=99, beam_width=5, max_depth=6):
         candidates.sort(key=lambda x: x[0], reverse=True)
         beams = candidates[:beam_width]
         
-        print(f"Depth {depth+1}: top {len(beams)} paths")
-        for s, p in beams:
-            print(f"  score={s}, path={p}, speedup={baseline_time/s}")
-        print("-" * 40)
+        #print(f"Depth {depth+1}: top 1 path")
+        for s, p in beams[:1]:
+            print(f"Depth {depth+1}: score={s}, path={p}, speedup={baseline_time/s}")
+        #print("-" * 40)
 
     # Return the best path found
     best_score, best_path = max(beams, key=lambda x: x[0])
@@ -162,7 +162,7 @@ def main(args):
     app_factory.compile()
     timeout = timeit.timeit(app_factory.measure, number=1) * 2
 
-    best_score, best_path = beam_search(app_factory, timeout)
+    best_score, best_path = beam_search(app_factory, timeout, n_trials = args.n_trials)
     print("\n Best found path:")
     print("Score:", best_score)
     print("Steps:", best_path)
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, default="LARGE")
     parser.add_argument("--oflag", type=int, default=3)
     parser.add_argument("--seed", type=int, default=47)
-    parser.add_argument("--n-trails", type=int, default=5)
+    parser.add_argument("--n-trials", type=int, default=2)
     args = parser.parse_args()
 
     if args.benchmark == "all":
