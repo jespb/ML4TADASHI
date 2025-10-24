@@ -24,7 +24,7 @@ def getAllPossible(app):
     return ret
 
 
-def isLegal(app=None, nextStep):
+def isLegal(app, nextStep):
     scop = app.scops[0]
     valid = -1
     try:
