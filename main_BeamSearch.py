@@ -137,7 +137,7 @@ def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
 
 
 def multiProcess_evaluation(a):
-    app, op_list, trials, timeout = a
+    app, trials, timeout = a
     
     if not app:
         return -1 * timeout
