@@ -140,7 +140,7 @@ def multiProcess_evaluation(a):
     app, n_trials, timeout = a
     
     if not app:
-        return -1 * timeout
+        return "E"
 
     return evaluate(app, n_trials, timeout)
 
@@ -179,7 +179,8 @@ def beam_search(app_factory, n_trials=2, timeout=99, beam_width=50, max_depth=10
                     ]
                 )
                 for i in range(len(new_paths)):
-                    candidates.append((results[i], new_paths[i]))
+                    if results[i] != "E":
+                        candidates.append((results[i], new_paths[i]))
 
         
         # sort candidates by descending score and keep only top beam_width
