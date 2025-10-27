@@ -132,22 +132,8 @@ def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
     return -1 * min(evals) 
 
 def multiProcess_evaluation(a):
-    app, trials, timeout = a
-    
-
-    if not app:
-        return -1 * timeout
-
-    evals = []
-    for _ in range(trials):
-        try:
-            evals.append(app.measure(timeout=timeout))
-        except TimeoutExpired:
-            # If the evaluations takes too long, it gets a bad fitness
-            evals.append(timeout)
-
-    # multiplied by -1 so fitness is meant to be maximized
-    return -1 * min(evals)
+    app, op_list, trials, timeout = a
+    evaluateList(app, op_list, trials, timeout)
 
 
 def beam_search(app_factory, n_trials=2, timeout=99, beam_width=50, max_depth=10, n_threads=1):
@@ -176,7 +162,8 @@ def beam_search(app_factory, n_trials=2, timeout=99, beam_width=50, max_depth=10
                     multiProcess_evaluation,
                     [
                         (
-                            generateAndCompile(app_factory, path),
+                            app_factory, 
+                            path,
                             n_trials,
                             timeout,
                         )
