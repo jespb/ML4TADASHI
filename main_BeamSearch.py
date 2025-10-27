@@ -171,7 +171,7 @@ def beam_search(app_factory, n_trials=2, timeout=99, beam_width=50, max_depth=10
                     multiProcess_evaluation,
                     [
                         (
-                            generateAndCompile(app, path)
+                            generateAndCompile(app, path),
                             n_trials,
                             timeout,
                         )
