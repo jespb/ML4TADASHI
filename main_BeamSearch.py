@@ -62,10 +62,11 @@ def isLegal(app, nextStep):
 
 def generateAndCompile(app, op_list):
     app = app.generate_code(populate_scops=True)
+    app.reset_scops()
     scop = app.scops[0]
     valid = -1
     try:
-        valid = scop.transform_list([nextStep])
+        valid = scop.transform_list(op_list)
         tapp = app.generate_code()
         tapp.compile()
         # At least one operation is not valid
@@ -114,12 +115,7 @@ def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
     return legalSteps
 
 
-def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
-    app = app_factory.generate_code(populate_scops=True)
-    scop = app.scops[0]
-    scop.transform_list(op_list)
-    app.compile()
-
+def evaluate(app, n_trials, timeout):
     evals = []
     for _ in range(n_trials):
         try:
@@ -131,9 +127,22 @@ def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
     # multiplied by -1 so fitness is meant to be maximized
     return -1 * min(evals) 
 
+def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
+    app = app_factory.generate_code(populate_scops=True)
+    scop = app.scops[0]
+    scop.transform_list(op_list)
+    app.compile()
+    return evaluate(app, n_trials, timeout)
+
+
+
 def multiProcess_evaluation(a):
     app, op_list, trials, timeout = a
-    evaluateList(app, op_list, trials, timeout)
+    
+    if not app:
+        return -1 * timeout
+
+    return evaluate(app, n_trials, timeout)
 
 
 def beam_search(app_factory, n_trials=2, timeout=99, beam_width=50, max_depth=10, n_threads=1):
@@ -162,8 +171,7 @@ def beam_search(app_factory, n_trials=2, timeout=99, beam_width=50, max_depth=10
                     multiProcess_evaluation,
                     [
                         (
-                            app_factory, 
-                            path,
+                            generateAndCompile(app_factory, path),
                             n_trials,
                             timeout,
                         )
