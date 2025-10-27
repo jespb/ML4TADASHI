@@ -52,6 +52,8 @@ def isLegal(app, nextStep):
         scop.schedule_tree[nextStep[0]].rollback()
         # At least one operation is not valid
         return sum([0 if v else 1 for v in valid]) == 0
+    except ValueError:
+        return False
     except:
         if valid != -1:
             scop.schedule_tree[nextStep[0]].rollback()
