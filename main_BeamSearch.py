@@ -133,6 +133,9 @@ def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
 def multiProcess_evaluation(a):
     app, trials, timeout = a
 
+    if not app:
+        return -1 * timeout
+
     evals = []
     for _ in range(trials):
         try:
@@ -171,7 +174,7 @@ def beam_search(app_factory, n_trials=2, timeout=99, beam_width=50, max_depth=10
                     multiProcess_evaluation,
                     [
                         (
-                            generateAndCompile(app, path),
+                            generateAndCompile(app_factory, path),
                             n_trials,
                             timeout,
                         )
