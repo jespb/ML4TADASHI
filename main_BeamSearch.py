@@ -212,7 +212,7 @@ def main(args):
     app_factory.compile()
     timeout = timeit.timeit(app_factory.measure, number=1) * 2
 
-    best_score, best_path = beam_search(app_factory, timeout=timeout, n_trials = args.n_trials)
+    best_score, best_path = beam_search(app_factory, timeout=timeout, n_trials = args.n_trials, n_threads = args.n_threads)
     print("\nBest found path --", best_score,"--", best_path)
 
 
@@ -224,6 +224,7 @@ if __name__ == "__main__":
     parser.add_argument("--oflag", type=int, default=3)
     parser.add_argument("--seed", type=int, default=47)
     parser.add_argument("--n-trials", type=int, default=2)
+    parser.add_argument("--n-threads", type=int, default=1)
     args = parser.parse_args()
 
     if args.benchmark == "all":
