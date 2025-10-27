@@ -60,6 +60,19 @@ def isLegal(app, nextStep):
         # If it cant transform, its not valid
         return False
 
+def generateAndCompile(app, op_list):
+    scop = app.scops[0]
+    valid = -1
+    try:
+        valid = scop.transform_list([nextStep])
+        tapp = app.generate_code()
+        tapp.compile()
+        # At least one operation is not valid
+        return tapp
+    except ValueError:
+        return False
+    except:
+        return False
 
 def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
     """
@@ -117,8 +130,22 @@ def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
     # multiplied by -1 so fitness is meant to be maximized
     return -1 * min(evals) 
 
+def multiProcess_evaluation(a):
+    app, trials, timeout = a
 
-def beam_search(app_factory, n_trials=2, timeout=99, beam_width=5, max_depth=6):
+    evals = []
+    for _ in range(trials):
+        try:
+            evals.append(app.measure(timeout=timeout))
+        except TimeoutExpired:
+            # If the evaluations takes too long, it gets a bad fitness
+            evals.append(timeout)
+
+    # multiplied by -1 so fitness is meant to be maximized
+    return -1 * min(evals)
+
+
+def beam_search(app_factory, n_trials=2, timeout=99, beam_width=50, max_depth=10, n_threads=1):
 
     # each beam element is (total_score, steps)
 
@@ -128,11 +155,32 @@ def beam_search(app_factory, n_trials=2, timeout=99, beam_width=5, max_depth=6):
 
     for depth in range(max_depth):
         candidates = []
+        new_paths = []
         for score, path in beams:
             for action in getNextOperations(app_factory, path):
                 new_path = path + [action]
-                new_score = evaluateList(app_factory, new_path, timeout=timeout, n_trials=n_trials)
-                candidates.append((new_score, new_path))
+                new_paths.append(new_path)
+
+        if n_threads == 1:
+            for path in new_paths:
+                new_score = evaluateList(app_factory, path, timeout=timeout, n_trials=n_trials)
+                candidates.append((new_score, path))
+        else:
+            with mp.Pool(processes=n_threads) as pool:
+                results = pool.map(
+                    multiProcess_evaluation,
+                    [
+                        (
+                            generateAndCompile(app, path)
+                            n_trials,
+                            timeout,
+                        )
+                        for path in new_paths
+                    ]
+                )
+                for i in range(len(new_paths)):
+                    candidates.append((results[i], new_paths[i]))
+
         
         # sort candidates by descending score and keep only top beam_width
         if not candidates:
