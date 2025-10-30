@@ -40,6 +40,7 @@ class Heuristic:
         dataset = f"-D{args.dataset}_DATASET"
         oflag = f"-O{args.oflag}"
         print(f"Using {dataset}")
+        self.app_name = args.benchmark
         self.app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
         self.app_factory.compile()
         self.n_trials = args.n_trials
@@ -50,7 +51,7 @@ class Heuristic:
 
         print("-----------------------------------------\n\n[STARTING NEW APP]")
 
-        print(app_name)
+        print(self.app_name)
 
         app = self.app_factory
 
