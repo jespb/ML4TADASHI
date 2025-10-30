@@ -61,7 +61,7 @@ if __name__ == "__main__":
             args.benchmark = benchmark
             print("\n\n\n")
             if args.method == "EvoTADASHI":
-                method = EvoTADASHI()
+                method = EvoTADASHI(args)
             elif args.method == "BeamSearch":
                 method = BeamSearch(args)
             elif args.method == "Heuristic":
