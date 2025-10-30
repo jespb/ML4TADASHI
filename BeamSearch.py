@@ -94,7 +94,7 @@ class BeamSearch:
             candidates = []
             new_paths = []
             for score, path in beams:
-                for action in getNextOperations(app_factory, path):
+                for action in getNextOperations(app_factory, path, beam_width=beam_width):
                     new_path = path + [action]
                     new_paths.append(new_path)
 
