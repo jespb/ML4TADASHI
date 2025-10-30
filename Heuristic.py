@@ -136,7 +136,10 @@ class Heuristic:
         print("Transformed app: %f" %  improved)
         print("Thats a %.2fx speedup!" % (bline/improved))
 
-        print(arrays_original == arrays_transformed)
+        if arrays_original == arrays_transformed:
+            print("The output matches the original")
+        else:
+            print("The output does not match the original")
 
         print("[FINISHED APP]\n\n")
 
