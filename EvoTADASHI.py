@@ -260,7 +260,7 @@ class Individual:
             return self
 
 
-class EvolTadashi:
+class EvoTADASHI:
     population = None
     max_gen = None
     best_individual = None
@@ -525,7 +525,7 @@ def main(args):
     timeout = timeit.timeit(app_factory.measure, number=1) * 2
 
     print("USING TIME LIMIT:", timeout)
-    m = EvolTadashi(
+    m = EvoTADASHI(
         app_factory,
         population_size=args.population_size,
         max_gen=args.max_gen,
