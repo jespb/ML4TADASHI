@@ -30,6 +30,32 @@ def getAllPossible(app):
     return ret
 
 
+def searchFor(app, tr_name):
+    scops = app.scops
+    ret = []
+    for si in range(len(scops[0].schedule_tree)):
+        s = scops[0].schedule_tree[si]
+        av = s.available_transformations
+        for t in av:
+            if t == tr_name:
+                ret.append(si)
+    return ret
+
+
+def getDepth_aux(node, depth=0):
+    cl = node.children
+    if len(cl) == 0:
+        return depth
+    else:
+        return max( [getDepth_aux(c, depth+1) for c in cl] )
+
+def getDepth(app, node_id):
+    base_node = app.scops[0].schedule_tree[node_id]
+    return getDepth_aux(base_node)
+
+
+
+
 def isLegal(app, nextStep):
     scop = app.scops[0]
     valid = -1
