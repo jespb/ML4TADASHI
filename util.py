@@ -132,7 +132,16 @@ def evaluate(app, n_trials, timeout):
     return -1 * min(evals) 
 
 
-
+def isOutputMatching(instr, app_factory, op_list):
+    scops = app_factory.scops
+    scops[0].reset()
+    valid = scops[0].transform_list(op_list)
+    tapp = app_factory.generate_code()
+    arrays_transformed = tapp.dump_arrays_and_time()["arrays"]
+    if arrays_original == arrays_transformed:
+        print("The output matches the original")
+    else:
+        print("The output does not match the original")
 
 def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
     app = app_factory.generate_code(populate_scops=True)
