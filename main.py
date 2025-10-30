@@ -59,7 +59,7 @@ if __name__ == "__main__":
             print("\n\n\n")
             args.benchmark = benchmark
             print(str(args) + "\n")
-            method.fit(args)
+            method.fit()
     else:
         print(str(args) + "\n")
-        method.fit(args)
+        method.fit()
