@@ -5,32 +5,8 @@ import tadashi
 from tadashi import TrEnum
 from tadashi.apps import Polybench
 
-apps_miniAMR = [
-    "examples/evaluation/miniAMR/",
-]
+from util import *
 
-def getDepth_aux(node, depth=0):
-    cl = node.children
-    if len(cl) == 0:
-        return depth
-    else:
-        return max( [getDepth_aux(c, depth+1) for c in cl] )
-
-def getDepth(app, node_id):
-    base_node = app.scops[0].schedule_tree[node_id]
-    return getDepth_aux(base_node)
-
-
-def searchFor(app, tr_name):
-    scops = app.scops
-    ret = []
-    for si in range(len(scops[0].schedule_tree)):
-        s = scops[0].schedule_tree[si]
-        av = s.available_transformations
-        for t in av:
-            if t == tr_name:
-                ret.append(si)
-    return ret
 
 
 class Heuristic:
@@ -50,11 +26,9 @@ class Heuristic:
     def fit(self):
 
         print("-----------------------------------------\n\n[STARTING NEW APP]")
-
         print(self.app_name)
 
         app = self.app_factory
-
 
         app.compile()
 
@@ -67,7 +41,6 @@ class Heuristic:
         tile_size = 32
 
         scops = app.scops
-
 
         trs = searchFor(app, "full_split")
         trs = [[index, TrEnum.FULL_SPLIT] for index in trs]
@@ -99,9 +72,6 @@ class Heuristic:
 
 
         trs2 = searchFor(app, "tile2d")
-        # for t in toRemoveFrom2D:
-        # 	if t in trs2:
-        # 		trs2.pop(trs2.index(t))
         trs2D = [[index, TrEnum.TILE2D, tile_size, tile_size] for index in trs2[::-1]]
         trs3D.extend(trs2D)
         trs3D.sort()
@@ -117,15 +87,11 @@ class Heuristic:
         scops[0].reset()
         valid = scops[0].transform_list(full_tr_list)
         print("TILE 2D and 3D list validity:", valid)
-        # full_tr_list.extend(trs3D[::-1])
-
 
         if self.allow_omp:
             print("Allowing parallel")
             trs = searchFor(app, "set_parallel")
             trs = [[index, TrEnum.SET_PARALLEL, 0] for index in trs]
-            #trs = [[trs[4], TrEnum.SET_PARALLEL, 0]]
-
 
             trs = trs[::-1]
             tmp = []
@@ -153,7 +119,6 @@ class Heuristic:
 
         scops[0].reset()
 
-
         # EVALUATION
 
         print("Tiling with size %d ..." % tile_size)
@@ -169,5 +134,4 @@ class Heuristic:
         print("Thats a %.2fx speedup!" % (bline/improved))
 
         print("[FINISHED APP]\n\n")
-
 
