@@ -36,7 +36,6 @@ def searchFor(app, tr_name):
 class Heuristic:
 
     def __init__(self, args):
-        seed(args.seed)
         print(f"Opening {args.benchmark}")
         dataset = f"-D{args.dataset}_DATASET"
         oflag = f"-O{args.oflag}"
