@@ -270,19 +270,25 @@ class EvoTADASHI:
     n_threads = None
     evaluations = None
 
-    def __init__(
-        self,
-        app_factory,
-        population_size=30,
-        max_gen=20,
-        n_trials=2,
-        t_size=2,
-        n_threads=1,
-        timeout=9999,
-        use_heuristic=False,
-    ):
-        self.app_factory = app_factory
-        self.use_heuristic = use_heuristic
+    def __init__(self, args):
+        seed(args.seed)
+        print(f"Opening {args.benchmark}")
+        dataset = f"-D{args.dataset}_DATASET"
+        oflag = f"-O{args.oflag}"
+        print(f"Using {dataset}")
+        self.app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
+        self.app_factory.compile()
+        self.timeout = timeit.timeit(self.app_factory.measure, number=1) * 2
+
+        print("USING TIME LIMIT:", self.timeout)
+
+        self.population_size=args.population_size
+        self.max_gen=args.max_gen
+        self.n_trials=args.n_trials
+        self.n_threads=args.n_threads
+        self.use_heuristic=args.use_heuristic
+        self.timeout=timeout
+
         # The initial population is an individual without transformations
         # so the algorithm starts by searching for simpler solutions first
 
@@ -535,60 +541,3 @@ def main(args):
         timeout=timeout,
     )
     m.fit()
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--benchmark", type=str, default="all")
-    parser.add_argument("--dataset", type=str, default="LARGE")
-    parser.add_argument("--oflag", type=int, default=3)
-    parser.add_argument("--seed", type=int, default=47)
-    parser.add_argument("--population-size", type=int, default=50)
-    parser.add_argument("--max-gen", type=int, default=10)
-    parser.add_argument("--n-trails", type=int, default=5)
-    parser.add_argument("--n-threads", type=int, default=2)
-    parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
-    args = parser.parse_args()
-
-    if args.benchmark == "all":
-        pb = [
-            "jacobi-1d",
-            "bicg",
-            "atax",
-            "gesummv",
-            "trisolv",
-            "durbin",
-            "mvt",
-            "gemver",
-            "deriche",
-            "doitgen",
-            "gemm",
-            "syrk",
-            "2mm",
-            "trmm",
-            "symm",
-            "jacobi-2d",
-            "fdtd-2d",
-            "cholesky",
-            "syr2k",
-            "3mm",
-            "correlation",
-            "covariance",
-            "heat-3d",
-            "gramschmidt",
-            "ludcmp",
-            "lu",
-            "nussinov",
-            "adi",
-            "floyd-warshall",
-            "seidel-2d",
-        ]
-        pb = pb[:]
-        for benchmark in pb:
-            print("\n\n\n")
-            args.benchmark = benchmark
-            print(str(args) + "\n")
-            main(args)
-    else:
-        print(str(args) + "\n")
-        main(args)
