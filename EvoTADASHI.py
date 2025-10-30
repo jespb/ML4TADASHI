@@ -15,30 +15,6 @@ from tadashi.apps import Polybench, Simple
 from util import *
 
 
-def multiProcess_fitnessEval(a):
-    """
-    EvoTADASHI Model evaluation using multiprocessing
-    app: app
-    trials: number of trials
-    timeout: timeout for each trial
-    pre_evaluated: dictionary with previous models fitnesses (if the model is present, evaluation is skipped)
-    """
-    app, trials, timeout, pre_evaluated = a
-
-    if pre_evaluated != 0:
-        return pre_evaluated
-
-    evals = []
-    for _ in range(trials):
-        try:
-            evals.append(app.measure(timeout=timeout))
-        except TimeoutExpired:
-            # If the evaluations takes too long, it gets a bad fitness
-            evals.append(timeout)
-
-    # multiplied by -1 so fitness is meant to be maximized
-    return -1 * min(evals)
-
 
 class Individual:
     operation_list: list = None
@@ -306,7 +282,7 @@ class EvoTADASHI:
             if self.n_threads > 1:
                 with mp.Pool(processes=self.n_threads) as pool:
                     results = pool.map(
-                        multiProcess_fitnessEval,
+                        multiProcess_evaluation,
                         [
                             (
                                 ind.generateCode(
