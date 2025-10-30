@@ -1,4 +1,6 @@
 
+from tadashi import TrEnum
+
 
 def random_args(node, tr):
     """
