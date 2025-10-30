@@ -113,7 +113,7 @@ def transformAndCompile(app_factory, op_list):
     app = app_factory.generate_code(populate_scops=True)
     app.reset_scops()
     scops = app.scops[0]
-    valid = scops.transform_list(self.operation_list)
+    valid = scops.transform_list(op_list)
     tapp = app.generate_code()
     tapp.compile()
     return tapp
