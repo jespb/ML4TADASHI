@@ -12,38 +12,8 @@ import tadashi
 from tadashi import TRANSFORMATIONS, LowerUpperBound, Scops, TrEnum
 from tadashi.apps import Polybench, Simple
 
+from util import *
 
-#
-# <functions for heuristic mode>
-#
-def getDepth_aux(node, depth=0):
-    cl = node.children
-    if len(cl) == 0:
-        return depth
-    else:
-        return max([getDepth_aux(c, depth + 1) for c in cl])
-
-
-def getDepth(app, node_id):
-    base_node = app.scops[0].schedule_tree[node_id]
-    return getDepth_aux(base_node)
-
-
-def searchFor(app, tr_name):
-    scops = app.scops
-    ret = []
-    for si in range(len(scops[0].schedule_tree)):
-        s = scops[0].schedule_tree[si]
-        av = s.available_transformations
-        for t in av:
-            if t == tr_name:
-                ret.append(si)
-    return ret
-
-
-#
-# </functions for heuristic mode>
-#
 
 
 def random_args(node, tr):
@@ -287,7 +257,6 @@ class EvoTADASHI:
         self.n_trials=args.n_trials
         self.n_threads=args.n_threads
         self.use_heuristic=args.use_heuristic
-        self.timeout=timeout
 
         # The initial population is an individual without transformations
         # so the algorithm starts by searching for simpler solutions first
