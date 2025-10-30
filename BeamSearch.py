@@ -70,8 +70,8 @@ class BeamSearch:
 
         self.n_trials = args.n_trials
         self.n_threads = args.n_threads
-        self.beam_width = 50
-        self.max_depth = 10
+        self.beam_width = args.beam_width
+        self.max_depth = args.max_depth
 
 
     def fit(self):
