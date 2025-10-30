@@ -128,10 +128,10 @@ class Heuristic:
         print("Is this transformation list valid:", valid)
 
         tapp = app.generate_code(alt_infix="_tiled%d" % tile_size, ephemeral=False)
-        tapp.compile()
+        
 
         arrays_transformed = tapp.dump_arrays_and_time()["arrays"]
-
+        tapp.compile()
         improved = tapp.measure(repeat=self.n_trials)
         print("Transformed app: %f" %  improved)
         print("Thats a %.2fx speedup!" % (bline/improved))
