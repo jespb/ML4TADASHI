@@ -132,7 +132,7 @@ class BeamSearch:
             
             #print(f"Depth {depth+1}: top 1 path")
             for s, p in beams[:3]:
-                print(f"Depth {depth+1}: score={s}, path={p}, speedup={baseline_time/s}")
+                print(f"Depth {depth+1}: score={s}, speedup={baseline_time/s}, path={p}")
             #print("-" * 40)
 
         # Return the best path found
@@ -141,7 +141,7 @@ class BeamSearch:
         # arrays_transformed
         scops = app_factory.scops
         scops[0].reset()
-        valid = scops[0].transform_list(full_tr_list)
+        valid = scops[0].transform_list(best_path)
         tapp = app.generate_code()
         arrays_transformed = tapp.dump_arrays_and_time()["arrays"]
 
