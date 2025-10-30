@@ -81,7 +81,7 @@ def isNextTransformationLegal(app, nextStep):
         valid = scop.transform_list([nextStep])
         tapp = app.generate_code()
         tapp.compile()
-        scop.schedule_tree[nextStep[0]].rollback()
+        scop.rollback()
         # At least one operation is not valid
         return sum([0 if v else 1 for v in valid]) == 0
     except ValueError:
@@ -90,7 +90,7 @@ def isNextTransformationLegal(app, nextStep):
     except:
         assert False
         if valid != -1:
-            scop.schedule_tree[nextStep[0]].rollback()
+            scop.rollback()
         # If it cant transform, its not valid
         return False
 
