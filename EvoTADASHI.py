@@ -257,6 +257,10 @@ class EvoTADASHI:
         self.n_trials=args.n_trials
         self.n_threads=args.n_threads
         self.use_heuristic=args.use_heuristic
+        self.t_size = args.tournament_size
+        self.population = []
+        self.evaluations = {}
+
 
         # The initial population is an individual without transformations
         # so the algorithm starts by searching for simpler solutions first
@@ -314,7 +318,7 @@ class EvoTADASHI:
         # </heuristic initialization>
         #
 
-        self.population = [Individual()]
+        self.population.append(Individual())
 
         if not self.use_heuristic:
             full_tr_list = []
@@ -325,13 +329,8 @@ class EvoTADASHI:
             legal = ind.isLegal(self.app_factory)
             self.population.append(Individual(op=full_tr_list[:i]))
 
-        self.population_size = population_size
-        self.max_gen = max_gen
-        self.n_trials = n_trials
-        self.t_size = t_size
-        self.n_threads = n_threads
-        self.timeout = timeout
-        self.evaluations = {}
+
+
 
     def tournament(self):
         """

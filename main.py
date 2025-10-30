@@ -16,6 +16,7 @@ if __name__ == "__main__":
     parser.add_argument("--n-threads", type=int, default=1)
     parser.add_argument("--method", type=str, default="EvoTADASHI")
     parser.add_argument("--population-size", type=int, default=50)
+    parser.add_argument("--tournament-size", type=int, default=2)
     parser.add_argument("--max-gen", type=int, default=10)
     parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
     parser.add_argument("--beam-width", type=int, default=10)
