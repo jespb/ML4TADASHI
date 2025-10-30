@@ -58,7 +58,7 @@ def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
 
 class BeamSearch:
 
-    def fit(app_factory, n_trials=2, timeout=99, beam_width=50, max_depth=10, n_threads=1):
+    def fit(self, app_factory, n_trials=2, timeout=99, beam_width=50, max_depth=10, n_threads=1):
 
         # each beam element is (total_score, steps)
 
