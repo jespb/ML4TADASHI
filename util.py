@@ -133,7 +133,8 @@ def evaluate(app, n_trials, timeout):
 
 
 def isOutputMatching(instr, app_factory, op_list):
-    scops = app_factory.scops
+	app = app_factory.generate_code(populate_scops=True)
+    scops = app.scops
     scops[0].reset()
     valid = scops[0].transform_list(op_list)
     tapp = app_factory.generate_code()

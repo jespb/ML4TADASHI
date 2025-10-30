@@ -131,7 +131,7 @@ class BeamSearch:
                 best = beams[0]
             
             #print(f"Depth {depth+1}: top 1 path")
-            for s, p in beams[:3]:
+            for s, p in beams[:]:
                 print(f"Depth {depth+1}: score={s}, speedup={baseline_time/s}, path={p}")
                 isOutputMatching(arrays_original, app_factory, p)
             #print("-" * 40)
