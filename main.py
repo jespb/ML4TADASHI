@@ -3,6 +3,7 @@
 import argparse
 from BeamSearch import BeamSearch
 from EvoTADASHI import EvoTADASHI
+from Heuristic  import Heuristic
 
  
 if __name__ == "__main__":
@@ -19,12 +20,16 @@ if __name__ == "__main__":
     parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
     parser.add_argument("--beam-width", type=int, default=10)
     parser.add_argument("--max-depth", type=int, default=10)
+    parser.add_argument("--n-trials", type=int, default=2)
+    parser.add_argument("--allow-omp", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     if args.method == "EvoTADASHI":
     	method = EvoTADASHI()
     elif args.method == "BeamSearch":
     	method = BeamSearch(args)
+    elif args.method == "Heuristic":
+    	method = Heuristic(args)
 
     if args.benchmark == "all":
         pb = [
