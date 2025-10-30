@@ -138,7 +138,7 @@ def isOutputMatching(instr, app_factory, op_list):
     valid = scops[0].transform_list(op_list)
     tapp = app_factory.generate_code()
     arrays_transformed = tapp.dump_arrays_and_time()["arrays"]
-    if arrays_original == arrays_transformed:
+    if instr == arrays_transformed:
         print("The output matches the original")
     else:
         print("The output does not match the original")
