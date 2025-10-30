@@ -65,7 +65,7 @@ class BeamSearch:
         oflag = f"-O{args.oflag}"
         print(f"Using {dataset}")
         self.app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
-        app_factory.compile()
+        self.app_factory.compile()
         self.timeout = timeit.timeit(app_factory.measure, number=1) * 2
 
         self.timeout = timeout
