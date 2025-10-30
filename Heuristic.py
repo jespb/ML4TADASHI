@@ -33,6 +33,7 @@ class Heuristic:
         app.compile()
 
         bline = app.measure(repeat=self.n_trials)
+        arrays_original = app.dump_arrays()
 
         print("Baseline measure: %f" % bline)
 
@@ -126,12 +127,16 @@ class Heuristic:
         valid = scops[0].transform_list(full_tr_list)
         print("Is this transformation list valid:", valid)
 
-        tiled = app.generate_code(alt_infix="_tiled%d" % tile_size, ephemeral=False)
-        tiled.compile()
+        tapp = app.generate_code(alt_infix="_tiled%d" % tile_size, ephemeral=False)
+        tapp.compile()
 
-        improved = tiled.measure(repeat=self.n_trials)
-        print("Tiling with size %d: %f" % (tile_size, improved))
+        arrays_transformed = tapp.dump_arrays()
+
+        improved = tapp.measure(repeat=self.n_trials)
+        print("Transformed app: %f" %  improved)
         print("Thats a %.2fx speedup!" % (bline/improved))
+
+        print(arrays_original == arrays_transformed)
 
         print("[FINISHED APP]\n\n")
 
