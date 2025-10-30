@@ -58,6 +58,7 @@ if __name__ == "__main__":
         ]
         pb = pb[:]
         for benchmark in pb:
+            args.benchmark = benchmark
             print("\n\n\n")
             if args.method == "EvoTADASHI":
                 method = EvoTADASHI()
@@ -65,7 +66,6 @@ if __name__ == "__main__":
                 method = BeamSearch(args)
             elif args.method == "Heuristic":
                 method = Heuristic(args)
-            args.benchmark = benchmark
             print(str(args) + "\n")
             method.fit()
     else:
