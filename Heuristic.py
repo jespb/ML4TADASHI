@@ -139,7 +139,7 @@ class Heuristic:
         if arrays_original == arrays_transformed:
             print("The output matches the original")
         else:
-            print("The output does not match the original", " "*30,  )
+            print("The output does not match the original", " "*30,  self.app_name)
 
         print("[FINISHED APP]\n\n")
 
