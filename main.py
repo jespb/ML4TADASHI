@@ -23,13 +23,6 @@ if __name__ == "__main__":
     parser.add_argument("--allow-omp", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
-    if args.method == "EvoTADASHI":
-    	method = EvoTADASHI()
-    elif args.method == "BeamSearch":
-    	method = BeamSearch(args)
-    elif args.method == "Heuristic":
-    	method = Heuristic(args)
-
     if args.benchmark == "all":
         pb = [
             "jacobi-1d",
@@ -66,9 +59,21 @@ if __name__ == "__main__":
         pb = pb[:]
         for benchmark in pb:
             print("\n\n\n")
+            if args.method == "EvoTADASHI":
+                method = EvoTADASHI()
+            elif args.method == "BeamSearch":
+                method = BeamSearch(args)
+            elif args.method == "Heuristic":
+                method = Heuristic(args)
             args.benchmark = benchmark
             print(str(args) + "\n")
             method.fit()
     else:
+        if args.method == "EvoTADASHI":
+            method = EvoTADASHI()
+        elif args.method == "BeamSearch":
+            method = BeamSearch(args)
+        elif args.method == "Heuristic":
+            method = Heuristic(args)
         print(str(args) + "\n")
         method.fit()
