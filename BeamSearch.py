@@ -133,24 +133,14 @@ class BeamSearch:
             #print(f"Depth {depth+1}: top 1 path")
             for s, p in beams[:3]:
                 print(f"Depth {depth+1}: score={s}, speedup={baseline_time/s}, path={p}")
+                isOutputMatching(arrays_original, app_factory, p)
             #print("-" * 40)
 
         # Return the best path found
         best_score, best_path = best
 
-        # arrays_transformed
-        scops = app_factory.scops
-        scops[0].reset()
-        valid = scops[0].transform_list(best_path)
-        tapp = app_factory.generate_code()
-        arrays_transformed = tapp.dump_arrays_and_time()["arrays"]
+        isOutputMatching(arrays_original, app_factory, best_path)
 
-
-
-        if arrays_original == arrays_transformed:
-            print("The output matches the original")
-        else:
-            print("The output does not match the original", " "*30,  self.app_name)
 
         print("\nBest found path --", best_score,"--", best_path)
         return best_score, best_path
