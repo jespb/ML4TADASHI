@@ -55,8 +55,26 @@ def getDepth(app, node_id):
 
 
 
+def isTransformationListLegal(app_factory, tr_list):
+	app = app_factory.generate_code(populate_scops=True)
+    scop = app.scops[0]
+    valid = -1
+    try:
+        valid = scop.transform_list(tr_list)
+        tapp = app.generate_code()
+        tapp.compile()
+        # At least one operation is not valid
+        return sum([0 if v else 1 for v in valid]) == 0
+    except ValueError:
+    	assert False
+        return False
+    except:
+    	assert False
+        # If it cant transform, its not valid
+        return False
 
-def isLegal(app, nextStep):
+
+def isNextTransformationLegal(app, nextStep):
     scop = app.scops[0]
     valid = -1
     try:
@@ -89,6 +107,16 @@ def generateAndCompile(app, op_list):
         return False
     except:
         return False
+
+
+def transformAndCompile(app_factory, op_list):
+	app = app_factory.generate_code(populate_scops=True)
+    app.reset_scops()
+    scops = app.scops[0]
+    valid = scops.transform_list(self.operation_list)
+    tapp = app.generate_code()
+    tapp.compile()
+    return tapp
 
 
 def evaluate(app, n_trials, timeout):

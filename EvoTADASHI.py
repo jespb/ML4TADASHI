@@ -15,20 +15,6 @@ from tadashi.apps import Polybench, Simple
 from util import *
 
 
-
-def random_args(node, tr):
-    """
-    Get random arguments for the transformation
-    Tiling is done using a number from [8, 16, 32, 64]
-    Other transformation use a random number from -64 to 64
-    """
-    tiles = [TrEnum.TILE1D, TrEnum.TILE2D, TrEnum.TILE3D]
-    if tr in tiles:
-        tile_size = choice([2**x for x in range(3, 7)])
-        return [tile_size] * (1 + tiles.index(tr))
-    return choice(node.get_args(tr, start=-64, end=64))
-
-
 def multiProcess_fitnessEval(a):
     """
     EvoTADASHI Model evaluation using multiprocessing
@@ -80,22 +66,9 @@ class Individual:
         """
         return self.getFitness() > other.getFitness()
 
-    def generateCode(self, app_factory, evaluations={}):
-        try:
-            valid = "not checked for validity"
-            app = app_factory.generate_code(populate_scops=True)
-            app.reset_scops()
-            scops = app.scops[0]
-            valid = scops.transform_list(self.operation_list)
-            tapp = app.generate_code()
-            tapp.compile()
-            return tapp
-        except:
-            print("[ERROR GENERATING CODE] -- %s -- %s " % (str(valid), str(self)))
-            evaluations[str(self)] = -9999
-            self.broken = True
-            #assert False
-            return app_factory
+    def generateCode(self, app_factory):
+        return transformAndCompile(app_factory, self.operation_list)
+
 
     def getFitness(
         self, app_factory=None, n_trials: int = None, timeout=9999, evaluations=None
@@ -124,19 +97,8 @@ class Individual:
 
         return self.fitness
 
-    def isLegal(self, app_factory=None):
-        app = app_factory.generate_code(populate_scops=True)
-        app.reset_scops()
-        scops = app.scops[0]
-        try:
-            valid = scops.transform_list(self.operation_list)
-            tapp = app.generate_code()
-            tapp.compile()
-            # At least one operation is not valid
-            return sum([0 if v else 1 for v in valid]) == 0
-        except:
-            # If it cant transform, its not valid
-            return False
+    def isLegal(self, app_factory):
+        return isTransformationListLegal(app_factory, self.operation_list)
 
     def crossover(self, other, app_factory=None):
         # 20% chance to crossover, 0% if either parents have length 0

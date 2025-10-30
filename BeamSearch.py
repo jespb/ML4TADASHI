@@ -47,7 +47,7 @@ def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
     # check legality and fetch |beam_width| solution
     legalSteps = []
     for i in range(len(possible)):
-        if isLegal(app, possible[i]):
+        if isNextTransformationLegal(app, possible[i]):
             legalSteps.append(possible[i])
             if len(legalSteps) >= beam_width:
                 return legalSteps
