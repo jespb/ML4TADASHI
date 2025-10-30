@@ -70,7 +70,7 @@ if __name__ == "__main__":
             method.fit()
     else:
         if args.method == "EvoTADASHI":
-            method = EvoTADASHI()
+            method = EvoTADASHI(args)
         elif args.method == "BeamSearch":
             method = BeamSearch(args)
         elif args.method == "Heuristic":
