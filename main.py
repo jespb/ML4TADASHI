@@ -19,7 +19,7 @@ if __name__ == "__main__":
     if args.method == "EvoTADASHI":
     	method = EvoTADASHI()
     elif args.method == "BeamSearch":
-    	method = BeamSearch()
+    	method = BeamSearch(args)
 
     if args.benchmark == "all":
         pb = [

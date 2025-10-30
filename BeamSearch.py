@@ -58,7 +58,30 @@ def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
 
 class BeamSearch:
 
-    def fit(self, app_factory, n_trials=2, timeout=99, beam_width=50, max_depth=10, n_threads=1):
+    def __init__(self, args):
+        seed(args.seed)
+        print(f"Opening {args.benchmark}")
+        dataset = f"-D{args.dataset}_DATASET"
+        oflag = f"-O{args.oflag}"
+        print(f"Using {dataset}")
+        self.app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
+        app_factory.compile()
+        self.timeout = timeit.timeit(app_factory.measure, number=1) * 2
+
+        self.timeout = timeout
+        self.n_trials = args.n_trials
+        self.n_threads = args.n_threads
+        self.beam_width = 50
+        self.max_depth = 10
+
+
+    def fit(self):
+        app_factory = self.app_factory
+        n_trials = self.n_trials
+        timeout = self.timeout 
+        beam_width = self.beam_width 
+        max_depth = self.max_depth 
+        n_threads = self.n_threads
 
         # each beam element is (total_score, steps)
 
@@ -109,25 +132,11 @@ class BeamSearch:
 
         # Return the best path found
         best_score, best_path = max(beams, key=lambda x: x[0])
+
+        print("\nBest found path --", best_score,"--", best_path)
         return best_score, best_path
 
 
-
-
-
-
-def main(args):
-    seed(args.seed)
-    print(f"Opening {args.benchmark}")
-    dataset = f"-D{args.dataset}_DATASET"
-    oflag = f"-O{args.oflag}"
-    print(f"Using {dataset}")
-    app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
-    app_factory.compile()
-    timeout = timeit.timeit(app_factory.measure, number=1) * 2
-
-    best_score, best_path = beam_search(app_factory, timeout=timeout, n_trials = args.n_trials, n_threads = args.n_threads)
-    print("\nBest found path --", best_score,"--", best_path)
 
 
 
