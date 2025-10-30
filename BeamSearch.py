@@ -142,7 +142,7 @@ class BeamSearch:
         scops = app_factory.scops
         scops[0].reset()
         valid = scops[0].transform_list(best_path)
-        tapp = app.generate_code()
+        tapp = app_factory.generate_code()
         arrays_transformed = tapp.dump_arrays_and_time()["arrays"]
 
 
