@@ -109,6 +109,7 @@ class BeamSearch:
                                 generateAndCompile(app_factory, path),
                                 n_trials,
                                 timeout,
+                                0 # previous score for EvoTADASHI, Ill add here later
                             )
                             for path in new_paths
                         ]

@@ -80,17 +80,7 @@ class Individual:
             self.fitness = evaluations[str(self.operation_list)]
 
         if self.fitness is None:
-            app = self.generateCode(app_factory)
-            evals = []
-            for _ in range(n_trials):
-                try:
-                    evals.append(app.measure(timeout=timeout))
-                except TimeoutExpired:
-                    # If the evaluations takes too long, it gets a bad fitness
-                    evals.append(timeout)
-
-            # multiplied by -1 so fitness is meant to be maximized
-            self.fitness = -1 * min(evals)
+            self.fitness = evaluateList(app_factory, self.operation_list, n_trials, timeout)
 
         if not evaluations is None:
             evaluations[str(self.operation_list)] = self.fitness
@@ -129,9 +119,9 @@ class Individual:
             return [self, other]
 
     def mutate(self, app_factory=None):
-        # 10% not mutate
-        # 10% lose last operation or not mutate
-        # 80% of appending a new operation at the end
+        #  5% not mutate
+        #  5% lose last operation or not mutate
+        # 90% of appending a new operation at the end
         mutationType = randint(0, 19)
 
         # No mutation
@@ -211,9 +201,6 @@ class EvoTADASHI:
         self.app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
         self.app_factory.compile()
         self.timeout = timeit.timeit(self.app_factory.measure, number=1) * 2
-
-        print("USING TIME LIMIT:", self.timeout)
-
         self.population_size=args.population_size
         self.max_gen=args.max_gen
         self.n_trials=args.n_trials
@@ -223,75 +210,71 @@ class EvoTADASHI:
         self.population = []
         self.evaluations = {}
 
-
-        # The initial population is an individual without transformations
-        # so the algorithm starts by searching for simpler solutions first
+        print("USING TIME LIMIT:", self.timeout)
 
         #
         # <heuristic initialization>
         #
+        if not self.use_heuristic:
+            full_tr_list = []
 
-        app = self.app_factory
+            app = self.app_factory
 
-        full_tr_list = []
+            tile_size = 32
 
-        tile_size = 32
+            scops = app.scops
 
-        scops = app.scops
-
-        trs = searchFor(app, "full_split")
-        trs = [[index, TrEnum.FULL_SPLIT] for index in trs]
-        trs = trs[::-1]
-        for t in trs:
+            trs = searchFor(app, "full_split")
+            trs = [[index, TrEnum.FULL_SPLIT] for index in trs]
+            trs = trs[::-1]
+            for t in trs:
+                scops[0].reset()
+                scops[0].transform_list(full_tr_list)
+                valid = scops[0].transform_list([t])
+                if valid[-1]:
+                    full_tr_list.append(t)
             scops[0].reset()
-            scops[0].transform_list(full_tr_list)
-            valid = scops[0].transform_list([t])
-            if valid[-1]:
-                full_tr_list.append(t)
-        scops[0].reset()
-        valid = scops[0].transform_list(full_tr_list)
+            valid = scops[0].transform_list(full_tr_list)
 
-        trs = searchFor(app, "tile3d")
-        toRemoveFrom2D = [a for a in trs]
-        toRemoveFrom2D.extend([a + 1 for a in trs])
-        toRemoveFrom2D = list(set(toRemoveFrom2D))
-        for t in trs:
-            if t - 1 in trs:
-                trs.pop(trs.index(t - 1))
-        trs3D = [
-            [index, TrEnum.TILE3D, tile_size, tile_size, tile_size]
-            for index in trs[::-1]
-        ]
+            trs = searchFor(app, "tile3d")
+            toRemoveFrom2D = [a for a in trs]
+            toRemoveFrom2D.extend([a + 1 for a in trs])
+            toRemoveFrom2D = list(set(toRemoveFrom2D))
+            for t in trs:
+                if t - 1 in trs:
+                    trs.pop(trs.index(t - 1))
+            trs3D = [
+                [index, TrEnum.TILE3D, tile_size, tile_size, tile_size]
+                for index in trs[::-1]
+            ]
 
-        trs2 = searchFor(app, "tile2d")
-        trs2D = [[index, TrEnum.TILE2D, tile_size, tile_size] for index in trs2[::-1]]
-        trs3D.extend(trs2D)
-        trs3D.sort()
-        trs3D = trs3D[::-1]
-        for t in trs3D:
+            trs2 = searchFor(app, "tile2d")
+            trs2D = [[index, TrEnum.TILE2D, tile_size, tile_size] for index in trs2[::-1]]
+            trs3D.extend(trs2D)
+            trs3D.sort()
+            trs3D = trs3D[::-1]
+            for t in trs3D:
+                scops[0].reset()
+                scops[0].transform_list(full_tr_list)
+                valid = scops[0].transform_list([t])
+                if valid[-1]:
+                    full_tr_list.append(t)
             scops[0].reset()
-            scops[0].transform_list(full_tr_list)
-            valid = scops[0].transform_list([t])
-            if valid[-1]:
-                full_tr_list.append(t)
-        scops[0].reset()
 
+            print("Transformations retrieved by Heuristic:")
+            for i in range(1, len(full_tr_list)):
+                op_list = full_tr_list[:1]
+                print("  ", op_list)
+                ind = Individual(op=op_list)
+                legal = ind.isLegal(self.app_factory)
+                self.population.append(Individual(op=full_tr_list[:i]))
         #
         # </heuristic initialization>
         #
 
+        # The initial population is an individual without transformations
+        # so the algorithm starts by searching for simpler solutions first
         self.population.append(Individual())
-
-        if not self.use_heuristic:
-            full_tr_list = []
-        print(full_tr_list)
-
-        for i in range(1, len(full_tr_list)):
-            ind = Individual(op=full_tr_list[:1])
-            legal = ind.isLegal(self.app_factory)
-            self.population.append(Individual(op=full_tr_list[:i]))
-
-
 
 
     def tournament(self):
@@ -301,6 +284,7 @@ class EvoTADASHI:
         return self.population[
             min([randint(0, len(self.population) - 1) for _ in range(self.t_size)])
         ]
+
 
     def fit(self):
 
@@ -448,26 +432,3 @@ class EvoTADASHI:
         #
         # </ use parellel in the final model >
         #
-
-
-def main(args):
-    seed(args.seed)
-    print(f"Opening {args.benchmark}")
-    dataset = f"-D{args.dataset}_DATASET"
-    oflag = f"-O{args.oflag}"
-    print(f"Using {dataset}")
-    app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
-    app_factory.compile()
-    timeout = timeit.timeit(app_factory.measure, number=1) * 2
-
-    print("USING TIME LIMIT:", timeout)
-    m = EvoTADASHI(
-        app_factory,
-        population_size=args.population_size,
-        max_gen=args.max_gen,
-        n_trials=args.n_trails,
-        n_threads=args.n_threads,
-        use_heuristic=args.use_heuristic,
-        timeout=timeout,
-    )
-    m.fit()
