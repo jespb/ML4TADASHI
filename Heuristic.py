@@ -43,7 +43,7 @@ class Heuristic:
         self.app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
         self.app_factory.compile()
         self.n_trials = args.n_trials
-        self.useOMP = self.allow_omp
+        self.useOMP = args.allow_omp
 
 
     def fit(self):
