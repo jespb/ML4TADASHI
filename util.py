@@ -85,8 +85,10 @@ def isNextTransformationLegal(app, nextStep):
         # At least one operation is not valid
         return sum([0 if v else 1 for v in valid]) == 0
     except ValueError:
+        assert False
         return False
     except:
+        assert False
         if valid != -1:
             scop.schedule_tree[nextStep[0]].rollback()
         # If it cant transform, its not valid
@@ -104,8 +106,10 @@ def generateAndCompile(app, op_list):
         # At least one operation is not valid
         return tapp
     except ValueError:
+        assert False
         return False
     except:
+        assert False
         return False
 
 
@@ -137,7 +141,7 @@ def isOutputMatching(instr, app_factory, op_list):
     scops = app.scops
     scops[0].reset()
     valid = scops[0].transform_list(op_list)
-    tapp = app_factory.generate_code()
+    tapp = app.generate_code()
     arrays_transformed = tapp.dump_arrays_and_time()["arrays"]
     if instr == arrays_transformed:
         print("The output matches the original")
