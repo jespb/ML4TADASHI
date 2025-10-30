@@ -66,9 +66,8 @@ class BeamSearch:
         print(f"Using {dataset}")
         self.app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
         self.app_factory.compile()
-        self.timeout = timeit.timeit(app_factory.measure, number=1) * 2
+        self.timeout = timeit.timeit(self.app_factory.measure, number=1) * 2
 
-        self.timeout = timeout
         self.n_trials = args.n_trials
         self.n_threads = args.n_threads
         self.beam_width = 50
