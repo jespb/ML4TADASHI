@@ -127,7 +127,7 @@ class Heuristic:
         valid = scops[0].transform_list(full_tr_list)
         print("Is this transformation list valid:", valid)
 
-        tapp = app.generate_code(alt_infix="_tiled%d" % tile_size, ephemeral=False)
+        tapp = app.generate_code()
         
 
         arrays_transformed = tapp.dump_arrays_and_time()["arrays"]
@@ -139,7 +139,7 @@ class Heuristic:
         if arrays_original == arrays_transformed:
             print("The output matches the original")
         else:
-            print("The output does not match the original")
+            print("The output does not match the original", " "*30,  )
 
         print("[FINISHED APP]\n\n")
 
