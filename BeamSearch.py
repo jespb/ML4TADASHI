@@ -86,7 +86,9 @@ class BeamSearch:
 
         op_list = []
         baseline_time = evaluateList(app_factory, op_list, timeout=timeout, n_trials=n_trials)
+        arrays_original = app_factory.dump_arrays_and_time()["arrays"]
         beams = [(baseline_time, op_list)]
+        best = (baseline_time, op_list)
 
         for depth in range(max_depth):
             candidates = []
@@ -124,6 +126,9 @@ class BeamSearch:
                 break
             candidates.sort(key=lambda x: x[0], reverse=True)
             beams = candidates[:beam_width]
+
+            if beams[0][0]<best[0]:
+                best = beams[0]
             
             #print(f"Depth {depth+1}: top 1 path")
             for s, p in beams[:3]:
@@ -131,7 +136,21 @@ class BeamSearch:
             #print("-" * 40)
 
         # Return the best path found
-        best_score, best_path = max(beams, key=lambda x: x[0])
+        best_score, best_path = best
+
+        # arrays_transformed
+        scops = app_factory.scops
+        scops[0].reset()
+        valid = scops[0].transform_list(full_tr_list)
+        tapp = app.generate_code()
+        arrays_transformed = tapp.dump_arrays_and_time()["arrays"]
+
+
+
+        if arrays_original == arrays_transformed:
+            print("The output matches the original")
+        else:
+            print("The output does not match the original", " "*30,  self.app_name)
 
         print("\nBest found path --", best_score,"--", best_path)
         return best_score, best_path
