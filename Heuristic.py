@@ -33,7 +33,7 @@ class Heuristic:
         app.compile()
 
         bline = app.measure(repeat=self.n_trials)
-        arrays_original = app.dump_arrays()
+        arrays_original = app.dump_arrays_and_time()["arrays"]
 
         print("Baseline measure: %f" % bline)
 
@@ -130,7 +130,7 @@ class Heuristic:
         tapp = app.generate_code(alt_infix="_tiled%d" % tile_size, ephemeral=False)
         tapp.compile()
 
-        arrays_transformed = tapp.dump_arrays()
+        arrays_transformed = tapp.dump_arrays_and_time()["arrays"]
 
         improved = tapp.measure(repeat=self.n_trials)
         print("Transformed app: %f" %  improved)
