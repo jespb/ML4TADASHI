@@ -71,6 +71,7 @@ class Heuristic:
 
 
         trs2 = searchFor(app, "tile2d")
+        trs2 = [i for i in trs2 if not i in toRemoveFrom2D]
         trs2D = [[index, TrEnum.TILE2D, tile_size, tile_size] for index in trs2[::-1]]
         trs3D.extend(trs2D)
         trs3D.sort()
@@ -128,7 +129,7 @@ class Heuristic:
 
         improved = evaluateList(self.app_factory, full_tr_list)
         print("Transformed app: %f" %  improved)
-        print("Thats a %.2fx speedup!" % (bline/improved))
+        print("Thats a %.4fx speedup!" % (bline/improved))
 
         isOutputMatching(arrays_original, self.app_factory, full_tr_list)
 
