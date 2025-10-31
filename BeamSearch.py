@@ -16,7 +16,7 @@ import random
 
 from util import *
 
-def getNextOperations(tapp, op_list, beam_width=3, max_depth=6):
+def getNextOperations(app, op_list, beam_width=3, max_depth=6):
     """
     Given a list of previous steps, returns a list of (action, delta_score) pairs.
     This is just an example — replace it with your own logic.
@@ -25,10 +25,11 @@ def getNextOperations(tapp, op_list, beam_width=3, max_depth=6):
     if depth >= 6:  # stop expanding after some depth
         return []
     
-    scop = tapp.scops[0]
+    app.reset_scops()
+    scop = app.scops[0]
     scop.transform_list(op_list)
 
-    possible = getAllPossible(tapp, ignore=["set_parallel"])
+    possible = getAllPossible(app, ignore=["set_parallel"])
     random.shuffle(possible)
 
     # get arguments for possible
@@ -43,7 +44,7 @@ def getNextOperations(tapp, op_list, beam_width=3, max_depth=6):
     # check legality and fetch |beam_width| solution
     legalSteps = []
     for i in range(len(possible)):
-        if isNextTransformationLegal(tapp, possible[i]):
+        if isNextTransformationLegal(app, possible[i]):
             legalSteps.append(possible[i])
             if len(legalSteps) >= beam_width:
                 return legalSteps
