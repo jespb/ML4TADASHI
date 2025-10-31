@@ -30,9 +30,7 @@ class Heuristic:
 
         app = self.app_factory
 
-        app.compile()
-
-        bline = app.measure(repeat=self.n_trials)
+        bline = evaluateList(self.app_factory, [])
         arrays_original = app.dump_arrays()
 
         print("Baseline measure: %f" % bline)
