@@ -83,7 +83,7 @@ class BeamSearch:
 
         op_list = []
         baseline_time = evaluateList(app_factory, op_list, timeout=timeout, n_trials=n_trials)
-        arrays_original = app_factory.dump_arrays_and_time()["arrays"]
+        arrays_original = app_factory.dump_arrays()
         beams = [(baseline_time, op_list)]
         best = (baseline_time, op_list)
 

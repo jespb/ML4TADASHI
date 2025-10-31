@@ -33,7 +33,7 @@ class Heuristic:
         app.compile()
 
         bline = app.measure(repeat=self.n_trials)
-        arrays_original = app.dump_arrays_and_time()["arrays"]
+        arrays_original = app.dump_arrays()
 
         print("Baseline measure: %f" % bline)
 
@@ -129,17 +129,14 @@ class Heuristic:
 
         tapp = app.generate_code()
         
-
-        arrays_transformed = tapp.dump_arrays_and_time()["arrays"]
         tapp.compile()
         improved = tapp.measure(repeat=self.n_trials)
         print("Transformed app: %f" %  improved)
         print("Thats a %.2fx speedup!" % (bline/improved))
 
-        if arrays_original == arrays_transformed:
-            print("The output matches the original")
-        else:
-            print("The output does not match the original", " "*30,  self.app_name)
+        isOutputMatching(instr, self.app_factory, full_tr_list)
+
+
 
         print("[FINISHED APP]\n\n")
 
