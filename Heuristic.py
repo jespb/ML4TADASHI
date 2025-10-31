@@ -134,7 +134,7 @@ class Heuristic:
         print("Transformed app: %f" %  improved)
         print("Thats a %.2fx speedup!" % (bline/improved))
 
-        isOutputMatching(instr, self.app_factory, full_tr_list)
+        isOutputMatching(arrays_original, self.app_factory, full_tr_list)
 
 
 
