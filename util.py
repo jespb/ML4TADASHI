@@ -1,7 +1,7 @@
 
 from random import choice
 from tadashi import TrEnum
-
+from subprocess import CalledProcessError, TimeoutExpired
 
 def random_args(node, tr):
     """
