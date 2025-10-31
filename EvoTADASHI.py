@@ -326,10 +326,10 @@ class EvoTADASHI:
                 # print("Breeding %d"%len(new_pop))
                 ind1 = self.tournament()
                 ind2 = self.tournament()
-                # print("	MUT")
+                # print("    MUT")
                 ind1 = ind1.mutate(self.app_factory)
                 ind2 = ind2.mutate(self.app_factory)
-                # print("	XO")
+                # print("    XO")
                 if False:
                     ret = ind1.crossover(ind2, self.app_factory)
                 else:

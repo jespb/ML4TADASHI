@@ -116,7 +116,7 @@ def generateAndCompile(app, op_list):
 
 
 def transformAndCompile(app_factory, op_list):
-	app_factory.reset_scops()
+    app_factory.reset_scops()
     scops = app_factory.scops[0]
     valid = scops.transform_list(op_list)
     tapp = app.generate_code()
