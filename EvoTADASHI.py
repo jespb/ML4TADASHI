@@ -122,7 +122,7 @@ class Individual:
 
             st = scops.schedule_tree
 
-            possible = getAllPossible(app, ignore=["parallel"])
+            possible = getAllPossible(app, ignore=["set_parallel"])
 
 
             at = 0

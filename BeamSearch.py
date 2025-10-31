@@ -29,7 +29,7 @@ def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
     scop = app.scops[0]
     scop.transform_list(op_list)
 
-    possible = getAllPossible(app, ignore=["parallel"])
+    possible = getAllPossible(app, ignore=["set_parallel"])
     random.shuffle(possible)
 
     # get arguments for possible
