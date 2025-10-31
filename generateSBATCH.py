@@ -12,8 +12,12 @@ for i in range(len(pb)):
 print("\n\n\n")
 
 for i in range(len(pb)):
-    t = (pb[i], pb[i], pb[i])
-    print("sbatch -o results_evost_XL/Evo_B_%s.txt --job-name=%s genoa_ML4T.sh --benchmark %s --dataset EXTRALARGE --method EvoTADASHI --use-heuristic" %t)
-    print("sbatch -o results_evost_XL/Evo_H_%s.txt --job-name=%s genoa_ML4T.sh --benchmark %s --dataset EXTRALARGE --method EvoTADASHI" %t)
-    print("sbatch -o results_evost_XL/BeamS_%s.txt --job-name=%s genoa_ML4T.sh --benchmark %s --dataset EXTRALARGE --method BeamSearch" %t)
-
+    #t = (pb[i], pb[i], pb[i])
+    if i == 0:
+        print("jid%d=$(sbatch -o results_evost_XL/Evo_B_%s.txt --job-name=%s genoa_ML4T.sh --benchmark %s --dataset EXTRALARGE --method EvoTADASHI --use-heuristic| awk '{print $4}')" % (i*3,pb[i], pb[i], pb[i]))
+        print("jid%d=$(sbatch -o results_evost_XL/Evo_H_%s.txt --job-name=%s genoa_ML4T.sh --benchmark %s --dataset EXTRALARGE --method EvoTADASHI| awk '{print $4}')" % (i*3+1,pb[i], pb[i], pb[i]))
+        print("jid%d=$(sbatch -o results_evost_XL/BeamS_%s.txt --job-name=%s genoa_ML4T.sh --benchmark %s --dataset EXTRALARGE --method BeamSearch| awk '{print $4}')" % (i*3+2,pb[i], pb[i], pb[i]))
+    else:
+        print("jid%d=$(sbatch -o results_evost_XL/Evo_B_%s.txt --job-name=%s --dependency=afterany:$jid%d genoa_ML4T.sh --benchmark %s --dataset EXTRALARGE --method EvoTADASHI --use-heuristic| awk '{print $4}')" % (i*3  ,pb[i], pb[i],i*3-3, pb[i]))
+        print("jid%d=$(sbatch -o results_evost_XL/Evo_H_%s.txt --job-name=%s --dependency=afterany:$jid%d genoa_ML4T.sh --benchmark %s --dataset EXTRALARGE --method EvoTADASHI| awk '{print $4}')"                 % (i*3+1,pb[i], pb[i],i*3-2, pb[i]))
+        print("jid%d=$(sbatch -o results_evost_XL/BeamS_%s.txt --job-name=%s --dependency=afterany:$jid%d genoa_ML4T.sh --benchmark %s --dataset EXTRALARGE --method BeamSearch| awk '{print $4}')"                 % (i*3+2,pb[i], pb[i],i*3-1, pb[i]))
