@@ -94,7 +94,7 @@ class Individual:
         else:
             return [self, other]
 
-    def mutate(self, app_factory=None):
+    def mutate(self, app=None):
         #  5% not mutate
         #  5% lose last operation or not mutate
         # 90% of appending a new operation at the end
@@ -108,11 +108,10 @@ class Individual:
         if mutationType == 1:
             op_list = self.operation_list[:-1]
             ret = Individual(op_list)
-            return ret if ret.isLegal(app_factory) else self
+            return ret
 
         # Appends a transformation to the end of the list
         if mutationType > 1:
-            app = app_factory.generate_code(populate_scops=True)
             app.reset_scops()
             scops = app.scops[0]
 

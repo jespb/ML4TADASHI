@@ -56,8 +56,8 @@ def getDepth(app, node_id):
 
 
 
-def isTransformationListLegal(app_factory, tr_list):
-    app = app_factory.generate_code(populate_scops=True)
+def isTransformationListLegal(app, tr_list):
+    app.reset_scops()
     scop = app.scops[0]
     valid = -1
     try:
@@ -98,7 +98,6 @@ def isNextTransformationLegal(app, nextStep):
         return False
 
 def generateAndCompile(app, op_list):
-    app = app.generate_code(populate_scops=True)
     app.reset_scops()
     scop = app.scops[0]
     valid = -1
@@ -117,9 +116,8 @@ def generateAndCompile(app, op_list):
 
 
 def transformAndCompile(app_factory, op_list):
-    app = app_factory.generate_code(populate_scops=True)
-    app.reset_scops()
-    scops = app.scops[0]
+	app_factory.reset_scops()
+    scops = app_factory.scops[0]
     valid = scops.transform_list(op_list)
     tapp = app.generate_code()
     tapp.compile()
