@@ -130,11 +130,10 @@ def transformAndCompile(app_factory, op_list):
 
 
 def isOutputMatching(instr, app_factory, op_list):
-    app = app_factory.generate_code(populate_scops=True)
-    scop = app.scops[0]
-    scop.reset()
+	app_factory.reset_scops()
+    scop = app_factory.scops[0]
     valid = scop.transform_list(op_list)
-    tapp = app.generate_code()
+    tapp = app_factory.generate_code()
     arrays_transformed = tapp.dump_arrays()
     if instr == arrays_transformed:
         print("The output matches the original")
@@ -143,7 +142,7 @@ def isOutputMatching(instr, app_factory, op_list):
 
 
 def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
-    app_factory.reset()
+    app_factory.reset_scops()
     scop = app_factory.scops[0]
     scop.transform_list(op_list)
     tapp = app_factory.generate_code()
