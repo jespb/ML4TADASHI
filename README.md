@@ -28,6 +28,17 @@ This heuristic proposed a list of transformations using a single evaluation, mak
 ...
 
 
+## How to use:
+
+$ python main.py [args]
+
+--method Heuristic|BeamSearch|EvoTADASHI(default)
+
+--benchmark all|polybench nem (e.g. gemm)|jacobi-1d(default)
+
+--dataset MINI|SMALL|LARGE(default)|EXTRALARGE
+
+for other arguments, check the main.py file
 
 ---
 
