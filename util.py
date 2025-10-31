@@ -26,8 +26,8 @@ def getAllPossible(app, ignore=[]):
     ret = []
     for x2, trans in tmp:
         for tran in trans:
-        	if not tran in ignore:
-	            ret.append([x2, tran])
+            if not tran in ignore:
+                ret.append([x2, tran])
     return ret
 
 
@@ -82,8 +82,8 @@ def isNextTransformationLegal(app, nextStep):
         valid = scop.transform_list([nextStep])
         valid = sum([0 if v else 1 for v in valid]) == 0
         if valid:
-	        tapp = app.generate_code()
-	        tapp.compile()
+            tapp = app.generate_code()
+            tapp.compile()
         scop.rollback()
         # At least one operation is not valid
         return valid
@@ -130,7 +130,7 @@ def transformAndCompile(app_factory, op_list):
 
 
 def isOutputMatching(instr, app_factory, op_list):
-	app_factory.reset_scops()
+    app_factory.reset_scops()
     scop = app_factory.scops[0]
     valid = scop.transform_list(op_list)
     tapp = app_factory.generate_code()
