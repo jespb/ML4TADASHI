@@ -125,12 +125,10 @@ class Heuristic:
         print("Tiling with size %d ..." % tile_size)
 
         valid = scops[0].transform_list(full_tr_list)
+        scops[0].reset()
         print("Is this transformation list valid:", valid)
 
-        tapp = app.generate_code()
-        
-        tapp.compile()
-        improved = tapp.measure(repeat=self.n_trials)
+        improved = evaluateList(self.app_factory, full_tr_list)
         print("Transformed app: %f" %  improved)
         print("Thats a %.2fx speedup!" % (bline/improved))
 
