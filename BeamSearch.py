@@ -132,7 +132,7 @@ class BeamSearch:
             
             #print(f"Depth {depth+1}: top 1 path")
             for s, p in beams[:]:
-                print(f"Depth {depth+1}: score={s}, speedup={baseline_time/s}, path={p}")
+                print("Depth: %2d, Score: %.6f, Speed up: %.4f, Path: %s" % (depth+1, s, baseline_time/s, str(p)) )
                 isOutputMatching(arrays_original, app_factory, p)
             #print("-" * 40)
 
