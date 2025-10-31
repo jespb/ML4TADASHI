@@ -143,11 +143,11 @@ def isOutputMatching(instr, app_factory, op_list):
 
 
 def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
-    app = app_factory.generate_code(populate_scops=True)
-    scop = app.scops[0]
+    app_factory.reset()
+    scop = app_factory.scops[0]
     scop.transform_list(op_list)
-    #app.compile()
-    return evaluate(app, n_trials, timeout)
+    tapp = app_factory.generate_code()
+    return evaluate(tapp, n_trials, timeout)
 
 def evaluate(app, n_trials, timeout):
     evals = []
