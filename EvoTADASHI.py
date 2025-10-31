@@ -138,12 +138,9 @@ class Individual:
                 op = [x2, tran, *args]
                 # print("IN MUT", op)
 
-                valid = st[x2].transform(tran, *args)
-                if valid:
+                if isNextTransformationLegal(app, op):
                     op_list.append(op)
                     return Individual(op_list)
-                else:
-                    st[x2].rollback()
 
             print(
                 "Mutation failed (attempts: %d, remaining possibilities: %d)"
