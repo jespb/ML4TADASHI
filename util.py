@@ -126,17 +126,7 @@ def transformAndCompile(app_factory, op_list):
     return tapp
 
 
-def evaluate(app, n_trials, timeout):
-    evals = []
-    for _ in range(n_trials):
-        try:
-            evals.append(app.measure(timeout=timeout))
-        except TimeoutExpired:
-            # If the evaluations takes too long, it gets a bad fitness
-            evals.append(timeout)
 
-    # multiplied by -1 so fitness is meant to be maximized
-    return -1 * min(evals) 
 
 
 def isOutputMatching(instr, app_factory, op_list):
@@ -151,6 +141,7 @@ def isOutputMatching(instr, app_factory, op_list):
     else:
         print("The output does not match the original")
 
+
 def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
     app = app_factory.generate_code(populate_scops=True)
     scop = app.scops[0]
@@ -158,6 +149,17 @@ def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
     #app.compile()
     return evaluate(app, n_trials, timeout)
 
+def evaluate(app, n_trials, timeout):
+    evals = []
+    for _ in range(n_trials):
+        try:
+            evals.append(app.measure(timeout=timeout))
+        except TimeoutExpired:
+            # If the evaluations takes too long, it gets a bad fitness
+            evals.append(timeout)
+
+    # multiplied by -1 so fitness is meant to be maximized
+    return -1 * min(evals) 
 
 
 def multiProcess_evaluation(a):
