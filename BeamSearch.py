@@ -29,7 +29,7 @@ def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
     scop = app.scops[0]
     scop.transform_list(op_list)
 
-    possible = getAllPossible(app)
+    possible = getAllPossible(app, ignore=["parallel"])
     random.shuffle(possible)
 
     # get arguments for possible
@@ -40,9 +40,6 @@ def getNextOperations(app_factory, op_list, beam_width=3, max_depth=6):
         args = random_args(node, tran)
         possible[i] = [x2, tran, *args]
 
-    possible = [
-        p for p in possible if not ("parallel" in p[1] )
-    ]
 
     # check legality and fetch |beam_width| solution
     legalSteps = []

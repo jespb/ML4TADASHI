@@ -122,14 +122,8 @@ class Individual:
 
             st = scops.schedule_tree
 
-            possible = []
-            for x2 in range(len(st)):
-                node = st[x2]
-                possible.extend([(x2, p) for p in node.available_transformations])
+            possible = getAllPossible(app, ignore=["parallel"])
 
-            possible = [
-                p for p in possible if not ("parallel" in p[1] or "shift" in p[1])
-            ]
 
             at = 0
             found = False

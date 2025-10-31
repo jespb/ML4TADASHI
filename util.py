@@ -15,7 +15,7 @@ def random_args(node, tr):
         return [tile_size] * (1 + tiles.index(tr))
     return choice(node.get_args(tr, start=-64, end=64))
 
-def getAllPossible(app):
+def getAllPossible(app, ignore=[]):
     scops = app.scops
     tmp = []
     for si in range(len(scops[0].schedule_tree)):
@@ -26,7 +26,8 @@ def getAllPossible(app):
     ret = []
     for x2, trans in tmp:
         for tran in trans:
-            ret.append([x2, tran])
+        	if not tran in ignore:
+	            ret.append([x2, tran])
     return ret
 
 
