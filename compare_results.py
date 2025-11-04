@@ -74,4 +74,13 @@ for p in pb:
     best_spd = max([ results["%s_%s"%(p, m)] for m in methods])
     for m in methods:
         spd = results["%s_%s"%(p, m)]
-        print("  %15s: %.3f %s" % (m, spd, "*" if spd > m*0.99 else ""))
+        print("  %15s: %.3f %s" % (m, spd, "*" if spd > best_spd*0.99 else ""))
+
+print("G-MEANs:")
+for m in methods:
+    gm = 1
+    for p in pb:
+        gm *= results["%s_%s"%(p, m)]
+    gm = gm**(1.0/len(pb))
+    print("  %15s: %.3f" % (m, gm))
+        
