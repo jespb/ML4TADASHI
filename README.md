@@ -46,7 +46,22 @@ for other arguments, check the main.py file
 
 [1] TADASHI: https://arxiv.org/abs/2410.03210
 
-[2] EvoTADASHI: (work in progress)
+[2] EvoTADASHI: (to be published at EvoAPPs'26 in April 2026)
+
+@InProceedings{evotadashi,
+author="Batista, Jo{\~a}o Eduardo
+and Vatai, Emil
+and Drozd, Aleksandr
+and Wahib, Mohamed",
+editor = "Garc\’ia-S\’anchez, Pablo
+and D\’iaz-\’Alvarez, Josefa, 
+and Murphy, Aidan",
+title =  {{EvoTADASHI: Genetic Programming for High-Performance Code Optimization}},
+booktitle="Applications of Evolutionary Computation",
+year = 2026,
+publisher="Springer Nature Switzerland",
+address="Cham",
+}
 
 [3] Beam Search on TADASHI: please cite [2]
 
