@@ -10,11 +10,11 @@ gemm = Polybench(
     translator = Polly(),
 )
 
-print(f"{gemm.user_compiler_options=}")
+print("\n\n\n"+ f"{gemm.user_compiler_options=}")
 
 gemm.compile()
 
-print(f"{gemm.measure()=}")
+print("\n\n\n"+ f"{gemm.measure()=}")
 
 
 for tile_size in [100]:
@@ -22,29 +22,26 @@ for tile_size in [100]:
 
     ## Shows available transformations (they might not be legal)
     sts = gemm.scops[1].schedule_tree
+    print("\n\n\n")
     for si in range(len(sts)):
         print(si, sts[si].available_transformations)
 
-    print(sts[0].yaml_str)
+    print("\n\n\n"+ sts[0].yaml_str)
 
     trs = [
-        #[0, 1, TrEnum.FULL_SPLIT],
-        [1, 7, TrEnum.TILE_2D, tile_size, tile_size],
-        #[0, 3, TrEnum.TILE_2D, tile_size, tile_size],
-        #[1, 7, TrEnum.SET_PARALLEL, 0],
+        #[1, TrEnum.FULL_SPLIT],
+        [7, TrEnum.TILE_2D, tile_size, tile_size],
+        #[3, TrEnum.TILE_2D, tile_size, tile_size],
+        #[7, TrEnum.SET_PARALLEL, 0],
     ]
 
-    gemm.transform_list(trs)
-
-    #sts = gemm.scops[0].schedule_tree
-    #for si in range(len(sts)):
-    #    print(si, sts[si].available_transformations)
+    print("\n\n\n",  gemm.scops[1].transform_list(trs))
         
-    #gemm.transform_list(trs)
-        
-    tiled = gemm.generate_code(alt_infix=f"_tiled{tile_size}", ephemeral=False)
+    transformed = gemm.generate_code(alt_infix=f"_tiled{tile_size}")
 
-    tiled.compile()    
-    print(f"{tile_size=} : {tiled.measure()=}")
+    trans_measure = transformed.measure()
+    print("\n\n\n")
+    print("Transformed measure: %.4f" % trans_measure)
+    
 
-print("DONE")
+print("[DONE]")
