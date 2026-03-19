@@ -4,7 +4,8 @@
 #PJM -N ML4TADASHI
 #PJM -L rscgrp=small
 #PJM -L elapse=1:00:00
-#PJM -L node=1
+#PJM -L node=2
+#PJM --mpi "max-proc-per-node=1"
 # #PJM --llio localtmp-size=40Gi
 #PJM -j -S
 set -e
@@ -23,4 +24,4 @@ function set_env (){
 
 source /home/apps/oss/llvm-v19.1.4/init.sh
 		  
-python ML4TADASHI/example_transformation_fugaku.py
+mpiexec python ML4TADASHI/example_mpi4py.py

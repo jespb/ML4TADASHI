@@ -22,9 +22,9 @@ def measure_mpi(nco):
             
 def main():
     name = "linear-algebra/blas/gemm"
-    comp_opt = ["-DEXTRALARGE_DATASET", "-O3"]
+    comp_opt = ["-DEXTRALARGE_DATASET", "-O2"]
 
-    with MPIPoolExecutor(max_workers=3) as executor: 
+    with MPIPoolExecutor() as executor: 
         futures = [
                 executor.submit(measure_mpi, (name, comp_opt))
                 for _ in range(3)
