@@ -21,7 +21,7 @@ for tile_size in [31, 100]:
     gemm.reset_scops()
     trs = [
         [0, 2, TrEnum.FULL_SPLIT],
-        [0, 7, TrEnum.TILE3D, tile_size, tile_size, tile_size],
+        [0, 7, TrEnum.TILE_3D, tile_size, tile_size, tile_size],
     ]
     gemm.transform_list(trs)
         
