@@ -49,10 +49,10 @@ for tile_size in [64, 128]:
         ]
     else:
         trs = [
-            [1, 2, TrEnum.FULL_SPLIT],
+            #[1, 2, TrEnum.FULL_SPLIT],
             #[0, 7, TrEnum.INTERCHANGE],
             #[1, 12, TrEnum.TILE_2D, tile_size, tile_size],
-            #[1, 7, TrEnum.TILE_2D, tile_size, tile_size],
+            [1, 7, TrEnum.TILE_2D, tile_size, tile_size],
             #[7, TrEnum.SET_PARALLEL, 0],
         ]
 
@@ -66,10 +66,8 @@ for tile_size in [64, 128]:
     print("\n\n\n"+ sts[1].yaml_str)
 
 
-    transformed = gemm.generate_code(alt_infix=f"_tiled{tile_size}", ephemeral=False, populate_scops=True)
+    transformed = gemm.generate_code(alt_infix=f"_tiled{tile_size}")
     trans_measure = transformed.measure()
-
-    print("\n\n\n"+ transformed.scops[1].schedule_tree[1].yaml_str)
 
 
     print("\n\n\n")

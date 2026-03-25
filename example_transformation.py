@@ -38,7 +38,7 @@ for tile_size in [64,100]:
 
     tiled = gemm.generate_code(alt_infix=f"_tiled{tile_size}")
 
-    tiled.compile()
+    #tiled.compile()
     print(f"{tile_size=} : {tiled.measure()=}")
 
 print("DONE")
