@@ -15,20 +15,22 @@ def print_available_transformations(app):
             print("%3d, %3d," %(s, n), st[n].available_transformations)
 
 
+translator = [None, Polly()][1]
+
 gemm = Polybench(
     "linear-algebra/blas/gemm",
-    compiler_options=["-DEXTRALARGE_DATASET", "-O3"],
-    translator = Polly(),
+    compiler_options=["-DEXTRALARGE_DATASET"],
+    translator = translator,
 )
 
 print("\n\n\n"+ f"{gemm.user_compiler_options=}")
 
 gemm.compile()
 
-#print("\n\n\n"+ f"{gemm.measure()=}")
+print("\n\n\n"+ f"{gemm.measure()=}")
 
 
-for tile_size in [128]:
+for tile_size in [64, 128]:
     gemm.reset_scops()
 
     ## Shows available transformations (they might not be legal)
@@ -39,13 +41,21 @@ for tile_size in [128]:
 
     print("\n\n\n"+ sts[1].yaml_str)
 
-    trs = [
-        [1, 2, TrEnum.FULL_SPLIT],
-	#[0, 7, TrEnum.INTERCHANGE],
-        #[1, 12, TrEnum.TILE_2D, tile_size, tile_size],
-        #[1, 7, TrEnum.TILE_2D, tile_size, tile_size],
-        #[7, TrEnum.SET_PARALLEL, 0],
-    ]
+    if translator is None:
+        trs = [
+            [0, 2, TrEnum.FULL_SPLIT],
+            [0, 7, TrEnum.TILE_3D, tile_size, tile_size, tile_size],
+            #[7, TrEnum.SET_PARALLEL, 0],
+        ]
+    else:
+        trs = [
+            [1, 2, TrEnum.FULL_SPLIT],
+            #[0, 7, TrEnum.INTERCHANGE],
+            #[1, 12, TrEnum.TILE_2D, tile_size, tile_size],
+            #[1, 7, TrEnum.TILE_2D, tile_size, tile_size],
+            #[7, TrEnum.SET_PARALLEL, 0],
+        ]
+
 
     print("\n\n\n",  gemm.transform_list(trs))
 
