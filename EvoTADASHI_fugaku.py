@@ -159,14 +159,17 @@ class EvoTADASHI:
     t_size = None
     n_threads = None
     evaluations = None
+    base = "examples/polybench"
 
     def __init__(self, args):
         seed(args.seed)
         print(f"Opening {args.benchmark}")
-        dataset = f"-D{args.dataset}_DATASET"
+        self.dataset = f"-D{args.dataset}_DATASET"
         oflag = f"-O{args.oflag}"
-        print(f"Using {dataset}")
-        self.app_factory = Polybench(args.benchmark, base="examples/polybench", compiler_options=[dataset], translator=Polly("clang"))
+        print(f"Using {self.dataset}")
+        self.benchmark = args.benchmark
+        self.base = args.base
+        self.app_factory = Polybench(args.benchmark, base=self.base, compiler_options=[self.dataset], translator=Polly("clang"))
         self.app_factory.compile()
         self.timeout = timeit.timeit(self.app_factory.measure, number=1) * 2
         self.population_size=args.population_size
@@ -212,30 +215,19 @@ class EvoTADASHI:
 
             start_time = time.time()
             if self.n_threads > 1:
-                with mp.Pool(processes=self.n_threads) as pool:
-                    results = pool.map(
-                        multiProcess_evaluation,
-                        [
-                            (
-                                ind.generateCode(
-                                    self.app_factory, self.evaluations
-                                ),  # sending evals as a tmp fix
-                                self.n_trials,
-                                self.timeout,
-                                (
-                                    self.evaluations[str(ind.operation_list)]
-                                    if str(ind.operation_list) in self.evaluations
-                                    else 0
-                                ),
-                            )
-                            for ind in self.population
-                        ],
-                    )
-                    for i in range(len(self.population)):
+                with MPIPoolExecutor() as executor:
+                    kwargs = {
+                        "benchmark":self.benchmark,
+                        "base":self.base,
+                        "compiler_options":["-fopenmp", self.dataset]
+                    }
+                    results = list(executor.map(
+                        remote_measure, 
+                        [kwargs] * len(self.population), 
+                        [ind.operation_list for ind in self.population] 
+                    ))
+                    for i in range(len(results)):
                         self.population[i].fitness = results[i]
-                        self.evaluations[str(self.population[i].operation_list)] = (
-                            results[i]
-                        )
             else:
                 [
                     i.getFitness(
