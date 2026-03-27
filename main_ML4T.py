@@ -1,10 +1,6 @@
 
 
 import argparse
-from BeamSearch import BeamSearch
-from EvoTADASHI_fugaku import EvoTADASHI
-from Heuristic  import Heuristic
-
  
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -24,6 +20,17 @@ if __name__ == "__main__":
     parser.add_argument("--max-depth", type=int, default=10)
     parser.add_argument("--allow-omp", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
+
+
+    if args.method == "EvoTADASHI":
+        from EvoTADASHI import EvoTADASHI
+    if args.method == "FugakuEvoTADASHI":
+        from EvoTADASHI_fugaku import EvoTADASHI
+    if args.method == "BeamSearch":
+        from BeamSearch import BeamSearch
+    if args.method == "Heuristic":
+        from Heuristic  import Heuristic
+
 
     if args.benchmark == "all":
         pb = [

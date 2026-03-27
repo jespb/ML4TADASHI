@@ -111,6 +111,10 @@ def evaluate(app, n_trials, timeout):
         except TimeoutExpired:
             # If the evaluations takes too long, it gets a bad fitness
             evals.append(timeout)
+        except FileNotFoundError:
+            print("[FileNotFoundError] -- utils/evaluate")
+            # If the evaluations takes too long, it gets a bad fitness
+            evals.append(timeout)
 
     # multiplied by -1 so fitness is meant to be maximized
     return -1 * min(evals) 
@@ -131,7 +135,10 @@ def multiProcess_evaluation(a):
 from mpi4py.futures import MPIPoolExecutor, as_completed
 from tadashi import TrEnum
 from tadashi.apps import Polybench
-from tadashi.translators import Polly
+try:
+    from tadashi.translators import Polly
+except:
+    pass
 import socket
 
 def app_from_kwargs(kwargs):

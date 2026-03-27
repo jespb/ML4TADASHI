@@ -44,7 +44,7 @@ def getNextOperations(app, op_list, beam_width=3, max_depth=6):
     # check legality and fetch |beam_width| solution
     legalSteps = []
     for i in range(len(possible)):
-        if isNextTransformationLegal(app, possible[i]):
+        if isTransformationListLegal(app, op_list + [possible[i]] ):
             legalSteps.append(possible[i])
             if len(legalSteps) >= beam_width:
                 return legalSteps
@@ -60,8 +60,10 @@ class BeamSearch:
         print(f"Opening {args.benchmark}")
         dataset = f"-D{args.dataset}_DATASET"
         oflag = f"-O{args.oflag}"
+        base=f"{args.base}"
         print(f"Using {dataset}")
-        self.app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
+        self.app_name = args.benchmark
+        self.app_factory = Polybench(args.benchmark, base=base, compiler_options=[dataset, oflag])
         self.app_factory.compile()
         self.timeout = timeit.timeit(self.app_factory.measure, number=1) * 2
 
