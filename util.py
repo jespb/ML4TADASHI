@@ -9,7 +9,7 @@ def random_args(node, tr):
     Tiling is done using a number from [8, 16, 32, 64]
     Other transformation use a random number from -64 to 64
     """
-    tiles = [TrEnum.TILE1D, TrEnum.TILE2D, TrEnum.TILE3D]
+    tiles = [TrEnum.TILE_1D, TrEnum.TILE_2D, TrEnum.TILE_3D]
     if tr in tiles:
         tile_size = choice([2**x for x in range(3, 7)])
         return [tile_size] * (1 + tiles.index(tr))
@@ -18,20 +18,22 @@ def random_args(node, tr):
 def getAllPossible(app, ignore=[]):
     scops = app.scops
     tmp = []
-    for si in range(len(scops[0].schedule_tree)):
-        s = scops[0].schedule_tree[si]
-        av = s.available_transformations
-        tmp.append( (si, av) )
+    for si in range(len(scops)):
+        for sti in range(len(scops[si].schedule_tree)):
+            s = scops[si].schedule_tree[sti]
+            av = s.available_transformations
+            tmp.append( (si, sti, av) )
 
     ret = []
-    for x2, trans in tmp:
+    for x1, x2, trans in tmp:
         for tran in trans:
             if not tran in ignore:
-                ret.append([x2, tran])
+                ret.append([x1, x2, tran])
     return ret
 
 
 def searchFor(app, tr_name):
+    assert False
     scops = app.scops
     ret = []
     for si in range(len(scops[0].schedule_tree)):
@@ -50,69 +52,21 @@ def getDepth_aux(node, depth=0):
     else:
         return max( [getDepth_aux(c, depth+1) for c in cl] )
 
-def getDepth(app, node_id):
-    base_node = app.scops[0].schedule_tree[node_id]
+def getDepth(app, scop_id, node_id):
+    base_node = app.scops[scop_id].schedule_tree[node_id]
     return getDepth_aux(base_node)
 
 
 
 def isTransformationListLegal(app, tr_list):
     app.reset_scops()
-    scop = app.scops[0]
-    valid = -1
     try:
-        valid = scop.transform_list(tr_list)
-        tapp = app.generate_code()
-        tapp.compile()
-        # At least one operation is not valid
-        return sum([0 if v else 1 for v in valid]) == 0
-    except ValueError:
-        assert False
-        return False
+        app.transform_list(tr_list)
+        return app.legal
     except:
-        assert False
-        # If it cant transform, its not valid
+        print("Failed to verify legality:", tr_list)
         return False
 
-
-def isNextTransformationLegal(app, nextStep):
-    scop = app.scops[0]
-    valid = -1
-    try:
-        valid = scop.transform_list([nextStep])
-        valid = sum([0 if v else 1 for v in valid]) == 0
-        if valid:
-            tapp = app.generate_code()
-            tapp.compile()
-        scop.rollback()
-        # At least one operation is not valid
-        return valid
-    except ValueError:
-        assert False
-        return False
-    except:
-        assert False
-        if valid != -1:
-            scop.rollback()
-        # If it cant transform, its not valid
-        return False
-
-def generateAndCompile(app, op_list):
-    app.reset_scops()
-    scop = app.scops[0]
-    valid = -1
-    try:
-        valid = scop.transform_list(op_list)
-        tapp = app.generate_code()
-        tapp.compile()
-        # At least one operation is not valid
-        return tapp
-    except ValueError:
-        assert False
-        return False
-    except:
-        assert False
-        return False
 
 
 def transformAndCompile(app_factory, op_list):
@@ -127,10 +81,9 @@ def transformAndCompile(app_factory, op_list):
 
 
 
-def isOutputMatching(instr, app_factory, op_list):
-    app_factory.reset_scops()
-    scop = app_factory.scops[0]
-    valid = scop.transform_list(op_list)
+def isOutputMatching(instr, app, op_list):
+    app.reset_scops()
+    app.transform_list(op_list)
     tapp = app_factory.generate_code()
     arrays_transformed = tapp.dump_arrays()
     if instr == arrays_transformed:
@@ -139,11 +92,10 @@ def isOutputMatching(instr, app_factory, op_list):
         print("The output does not match the original")
 
 
-def evaluateList(app_factory, op_list, n_trials=2, timeout = 99):
-    app_factory.reset_scops()
-    scop = app_factory.scops[0]
-    scop.transform_list(op_list)
-    tapp = app_factory.generate_code()
+def evaluateList(app, op_list, n_trials=2, timeout = 99):
+    app.reset_scops()
+    app.transform_list(op_list)
+    tapp = app.generate_code()
     return evaluate(tapp, n_trials, timeout)
 
 def evaluate(app, n_trials, timeout):

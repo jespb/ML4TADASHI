@@ -2,13 +2,13 @@
 
 import argparse
 from BeamSearch import BeamSearch
-from EvoTADASHI import EvoTADASHI
+from EvoTADASHI_fugaku import EvoTADASHI
 from Heuristic  import Heuristic
 
  
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--benchmark", type=str, default="jacobi-1d")
+    parser.add_argument("--benchmark", type=str, default="stencils/jacobi-1d")
     parser.add_argument("--dataset", type=str, default="LARGE")
     parser.add_argument("--oflag", type=int, default=3)
     parser.add_argument("--seed", type=int, default=47)
