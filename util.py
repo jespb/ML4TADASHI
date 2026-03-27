@@ -147,4 +147,4 @@ def remote_measure(kwargs, trs):
     tapp = app.generate_code(alt_infix=f"_evot_{hostname}", ephemeral=False)
     tapp.compile()
     rv = tapp.measure()
-    return rv #, hostname
+    return rv, hostname

@@ -227,7 +227,8 @@ class EvoTADASHI:
                         [ind.operation_list for ind in self.population] 
                     ))
                     for i in range(len(results)):
-                        self.population[i].fitness = results[i]
+                        self.population[i].fitness = results[i][0]
+                        #print("      Individual %d was evaluated on hostname"%i, results[i][1])
             else:
                 [
                     i.getFitness(
