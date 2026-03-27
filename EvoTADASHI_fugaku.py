@@ -223,6 +223,7 @@ class EvoTADASHI:
                     }
                     results = list(executor.map(
                         remote_measure, 
+                        [Polybench] * len(self.population),
                         [kwargs] * len(self.population), 
                         [ind.operation_list for ind in self.population] 
                     ))

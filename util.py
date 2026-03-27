@@ -145,11 +145,11 @@ def app_from_kwargs(kwargs):
     kwargs["translator"] = Polly()
     return Polybench(**kwargs)
 
-def remote_measure(kwargs, trs):
+def remote_measure(cls, kwargs, trs):
     print(f"{trs=}")
     hostname = socket.gethostname()
     print(f"{hostname=}")
-    app = app_from_kwargs(kwargs)
+    app = cls.mkapp(kwargs)
     app.transform_list(trs)
     tapp = app.generate_code(alt_infix=f"_evot_{hostname}", ephemeral=False)
     tapp.compile()
