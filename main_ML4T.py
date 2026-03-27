@@ -24,12 +24,15 @@ if __name__ == "__main__":
 
     if args.method == "EvoTADASHI":
         from EvoTADASHI import EvoTADASHI
-    if args.method == "FugakuEvoTADASHI":
+    elif args.method == "FugakuEvoTADASHI":
         from EvoTADASHI_fugaku import EvoTADASHI
-    if args.method == "BeamSearch":
+    elif args.method == "BeamSearch":
         from BeamSearch import BeamSearch
-    if args.method == "Heuristic":
+    elif args.method == "Heuristic":
         from Heuristic  import Heuristic
+    else:
+        print("Method not implemented %s" %args.method)
+        assert False
 
 
     if args.benchmark == "all":
@@ -69,7 +72,7 @@ if __name__ == "__main__":
         for benchmark in pb:
             args.benchmark = benchmark
             print("\n\n\n")
-            if args.method == "EvoTADASHI":
+            if args.method in ["EvoTADASHI","FugakuEvoTADASHI"]:
                 method = EvoTADASHI(args)
             elif args.method == "BeamSearch":
                 method = BeamSearch(args)
@@ -78,7 +81,7 @@ if __name__ == "__main__":
             print(str(args) + "\n")
             method.fit()
     else:
-        if args.method == "EvoTADASHI":
+        if args.method in ["EvoTADASHI","FugakuEvoTADASHI"]:
             method = EvoTADASHI(args)
         elif args.method == "BeamSearch":
             method = BeamSearch(args)

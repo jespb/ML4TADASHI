@@ -9,7 +9,7 @@ from subprocess import CalledProcessError, TimeoutExpired
 
 import multiprocess as mp
 import tadashi
-from tadashi import TRANSFORMATIONS, LowerUpperBound, Scops, TrEnum
+from tadashi import TrEnum
 from tadashi.apps import Polybench, Simple
 
 from util import *

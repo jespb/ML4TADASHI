@@ -26,4 +26,4 @@ export LD_PRELOAD=/usr/lib/FJSVtcs/ple/lib64/libpmix.so
 source /home/apps/oss/llvm-v19.1.4/init.sh
 		  
 
-mpirun -n 1 python -u ML4TADASHI/main_ML4T.py --n-threads 2
+mpirun -n 1 python -u ML4TADASHI/main_ML4T.py --n-threads 2 --method FugakuEvoTADASHI --population-size 10 --max-gen 5
