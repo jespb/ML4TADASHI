@@ -56,12 +56,18 @@ def getDepth(app, scop_id, node_id):
     base_node = app.scops[scop_id].schedule_tree[node_id]
     return getDepth_aux(base_node)
 
-
-
 def isTransformationListLegal(app, tr_list):
     app.reset_scops()
     try:
         app.transform_list(tr_list)
+        return app.legal
+    except:
+        print("Failed to verify legality:", tr_list)
+        return False
+        
+def isNextTransformationLegal(app, tr):
+    try:
+        app.transform_list(tr)
         return app.legal
     except:
         print("Failed to verify legality:", tr_list)
