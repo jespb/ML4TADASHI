@@ -4,7 +4,7 @@
 #PJM -N ML4TADASHI
 #PJM -L rscgrp=small
 #PJM -L elapse=1:00:00
-#PJM -L node=2
+#PJM -L node=3
 #PJM --mpi "max-proc-per-node=1"
 # #PJM --llio localtmp-size=40Gi
 #PJM -j -S
@@ -22,6 +22,8 @@ function set_env (){
   export MAN_PATH="$1/man${MAN_PATH:+:${MAN_PATH}}"
 }
 
+export LD_PRELOAD=/usr/lib/FJSVtcs/ple/lib64/libpmix.so 
 source /home/apps/oss/llvm-v19.1.4/init.sh
 		  
-mpiexec python ML4TADASHI/example_mpi4py.py
+
+mpirun -n 1 python -u ML4TADASHI/main_ML4T.py --n-threads 2
