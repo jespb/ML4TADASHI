@@ -7,7 +7,7 @@ from pathlib import Path
 from random import choice, randint, randrange, seed
 from subprocess import CalledProcessError, TimeoutExpired
 
-#import multiprocess as mp
+# import multiprocess as mp
 import tadashi
 from tadashi import TrEnum
 from tadashi.apps import Polybench, Simple
@@ -28,7 +28,8 @@ class Individual:
         tmp = "["
         for op in self.operation_list:
             tmp += "[%s, %s, %s, %s], " % (
-                str(op[0]), str(op[1]),
+                str(op[0]),
+                str(op[1]),
                 "tadashi.TrEnum." + op[2].name,
                 ", ".join(str(x) for x in op[3:]),
             )
@@ -86,7 +87,7 @@ class Individual:
         if mutationType > 1:
             app.reset_scops()
 
-            op_list = self.operation_list[:]       
+            op_list = self.operation_list[:]
             app.transform_list(op_list)
 
             possible = getAllPossible(app, ignore=["set_parallel", "scale"])
@@ -98,11 +99,11 @@ class Individual:
                 at += 1
 
                 x1, x2, tran = possible.pop(randint(0, len(possible) - 1))
-                node = app.scops[x1].schedule_tree[x2] # here (check below)
+                node = app.scops[x1].schedule_tree[x2]  # here (check below)
                 args = random_args(node, tran)
 
                 op = [x1, x2, tran, *args]
-                #print("IN MUT", op)
+                # print("IN MUT", op)
 
                 if isNextTransformationLegal(app, [op]):
                     op_list.append(op)
@@ -110,8 +111,8 @@ class Individual:
                 else:
                     # needed for ~0 lines above
                     app.scops[x1].rollback()
-                    #app.reset_scops()
-                    #app.transform_list(op_list)
+                    # app.reset_scops()
+                    # app.transform_list(op_list)
 
             print(
                 "Mutation failed (attempts: %d, remaining possibilities: %d)"
@@ -139,14 +140,19 @@ class EvoTADASHI:
         print(f"Using {self.dataset}")
         self.benchmark = args.benchmark
         self.base = args.base
-        self.app_factory = Polybench(args.benchmark, base=self.base, compiler_options=[self.dataset], translator=Polly("clang"))
+        self.app_factory = Polybench(
+            args.benchmark,
+            base=self.base,
+            compiler_options=[self.dataset],
+            translator=Polly("clang"),
+        )
         self.app_factory.compile()
         self.timeout = timeit.timeit(self.app_factory.measure, number=1) * 2
-        self.population_size=args.population_size
-        self.max_gen=args.max_gen
-        self.n_trials=args.n_trials
-        self.n_threads=args.n_threads
-        self.use_heuristic=args.use_heuristic
+        self.population_size = args.population_size
+        self.max_gen = args.max_gen
+        self.n_trials = args.n_trials
+        self.n_threads = args.n_threads
+        self.use_heuristic = args.use_heuristic
         self.t_size = args.tournament_size
         self.population = []
         self.evaluations = {}
@@ -156,11 +162,9 @@ class EvoTADASHI:
         if self.n_threads > 1:
             self.executor = MPIPoolExecutor()
 
-
         # The initial population is an individual without transformations
         # so the algorithm starts by searching for simpler solutions first
         self.population.append(Individual())
-
 
     def tournament(self):
         """
@@ -169,7 +173,6 @@ class EvoTADASHI:
         return self.population[
             min([randint(0, len(self.population) - 1) for _ in range(self.t_size)])
         ]
-
 
     def fit(self):
 
@@ -240,7 +243,7 @@ class EvoTADASHI:
                 if False:
                     # TODO: Implement crossover
                 else:
-                    ret = [ind1, ind2] # no crossover
+                    ret = [ind1, ind2]  # no crossover
                 new_pop.extend(ret)
             new_pop = new_pop[: self.population_size]
             self.population = new_pop

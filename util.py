@@ -1,7 +1,8 @@
-
 from random import choice
-from tadashi import TrEnum
 from subprocess import CalledProcessError, TimeoutExpired
+
+from tadashi import TrEnum
+
 
 def random_args(node, tr):
     """
@@ -15,6 +16,7 @@ def random_args(node, tr):
         return [tile_size] * (1 + tiles.index(tr))
     return choice(node.get_args(tr, start=-64, end=64))
 
+
 def getAllPossible(app, ignore=[]):
     scops = app.scops
     tmp = []
@@ -22,7 +24,7 @@ def getAllPossible(app, ignore=[]):
         for sti in range(len(scops[si].schedule_tree)):
             s = scops[si].schedule_tree[sti]
             av = s.available_transformations
-            tmp.append( (si, sti, av) )
+            tmp.append((si, sti, av))
 
     ret = []
     for x1, x2, trans in tmp:
@@ -50,11 +52,13 @@ def getDepth_aux(node, depth=0):
     if len(cl) == 0:
         return depth
     else:
-        return max( [getDepth_aux(c, depth+1) for c in cl] )
+        return max([getDepth_aux(c, depth + 1) for c in cl])
+
 
 def getDepth(app, scop_id, node_id):
     base_node = app.scops[scop_id].schedule_tree[node_id]
     return getDepth_aux(base_node)
+
 
 def isTransformationListLegal(app, tr_list):
     app.reset_scops()
@@ -64,7 +68,8 @@ def isTransformationListLegal(app, tr_list):
     except:
         print("Failed to verify legality:", tr_list)
         return False
-        
+
+
 def isNextTransformationLegal(app, tr):
     try:
         app.transform_list(tr)
@@ -74,16 +79,12 @@ def isNextTransformationLegal(app, tr):
         return False
 
 
-
 def transformAndCompile(app, op_list):
     app.reset_scops()
     app.transform_list(op_list)
     tapp = app.generate_code()
     tapp.compile()
     return tapp
-
-
-
 
 
 def isOutputMatching(instr, app, op_list):
@@ -97,11 +98,12 @@ def isOutputMatching(instr, app, op_list):
         print("The output does not match the original")
 
 
-def evaluateList(app, op_list, n_trials=2, timeout = 99):
+def evaluateList(app, op_list, n_trials=2, timeout=99):
     app.reset_scops()
     app.transform_list(op_list)
     tapp = app.generate_code()
     return evaluate(tapp, n_trials, timeout)
+
 
 def evaluate(app, n_trials, timeout):
     evals = []
@@ -117,12 +119,13 @@ def evaluate(app, n_trials, timeout):
             evals.append(timeout)
 
     # multiplied by -1 so fitness is meant to be maximized
-    return -1 * min(evals) 
-
+    return -1 * min(evals)
 
 
 def search_and_apply_parallel(app, tr_list):
-    print("[ERROR] search_and_apply_parallel : Dont use this function, it will be RE-integrated after EvoAPPs")
+    print(
+        "[ERROR] search_and_apply_parallel : Dont use this function, it will be RE-integrated after EvoAPPs"
+    )
 
     app.reset_scops()
     app.transform_list(tr_list)
@@ -168,17 +171,17 @@ def search_and_apply_parallel(app, tr_list):
 
 def multiProcess_evaluation(a):
     app, n_trials, timeout, pre_evaluated = a
-    
+
     if not app:
         return "E"
 
     return evaluate(app, n_trials, timeout)
 
 
-
 from mpi4py.futures import MPIPoolExecutor, as_completed
 from tadashi import TrEnum
 from tadashi.apps import Polybench
+
 try:
     from tadashi.translators import Polly
 except:
@@ -186,9 +189,11 @@ except:
     pass
 import socket
 
+
 def app_from_kwargs(kwargs):
     kwargs["translator"] = Polly()
     return Polybench(**kwargs)
+
 
 def remote_measure(cls, kwargs, trs):
     print(f"{trs=}")

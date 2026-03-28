@@ -1,7 +1,6 @@
-
-
 import argparse
- 
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--benchmark", type=str, default="stencils/jacobi-1d")
@@ -21,7 +20,6 @@ if __name__ == "__main__":
     parser.add_argument("--allow-omp", action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
-
     if args.method == "EvoTADASHI":
         from EvoTADASHI import EvoTADASHI
     elif args.method == "FugakuEvoTADASHI":
@@ -29,11 +27,10 @@ if __name__ == "__main__":
     elif args.method == "BeamSearch":
         from BeamSearch import BeamSearch
     elif args.method == "Heuristic":
-        from Heuristic  import Heuristic
+        from Heuristic import Heuristic
     else:
-        print("Method not implemented %s" %args.method)
+        print("Method not implemented %s" % args.method)
         assert False
-
 
     if args.benchmark == "all":
         pb = [
@@ -72,7 +69,7 @@ if __name__ == "__main__":
         for benchmark in pb:
             args.benchmark = benchmark
             print("\n\n\n")
-            if args.method in ["EvoTADASHI","FugakuEvoTADASHI"]:
+            if args.method in ["EvoTADASHI", "FugakuEvoTADASHI"]:
                 method = EvoTADASHI(args)
             elif args.method == "BeamSearch":
                 method = BeamSearch(args)
@@ -81,7 +78,7 @@ if __name__ == "__main__":
             print(str(args) + "\n")
             method.fit()
     else:
-        if args.method in ["EvoTADASHI","FugakuEvoTADASHI"]:
+        if args.method in ["EvoTADASHI", "FugakuEvoTADASHI"]:
             method = EvoTADASHI(args)
         elif args.method == "BeamSearch":
             method = BeamSearch(args)
