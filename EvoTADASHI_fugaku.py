@@ -7,15 +7,13 @@ from pathlib import Path
 from random import choice, randint, randrange, seed
 from subprocess import CalledProcessError, TimeoutExpired
 
-#import multiprocess as mp
+# import multiprocess as mp
 import tadashi
 from tadashi import TrEnum
 from tadashi.apps import Polybench, Simple
 from tadashi.translators import Polly
 
-
 from util import *
-
 
 
 class Individual:
@@ -46,7 +44,6 @@ class Individual:
 
     def generateCode(self, app_factory):
         return transformAndCompile(app_factory, self.operation_list)
-
 
     def getFitness(
         self, app_factory=None, n_trials: int = None, timeout=9999, evaluations=None
@@ -191,7 +188,6 @@ class EvoTADASHI:
         # so the algorithm starts by searching for simpler solutions first
         self.population.append(Individual())
 
-
     def tournament(self):
         """
         Requires: sorted population
@@ -199,7 +195,6 @@ class EvoTADASHI:
         return self.population[
             min([randint(0, len(self.population) - 1) for _ in range(self.t_size)])
         ]
-
 
     def fit(self):
 
