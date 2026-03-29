@@ -183,6 +183,10 @@ class EvoTADASHI:
 
         print("USING TIME LIMIT:", self.timeout)
 
+        if self.n_threads > 1:
+            self.executor = MPIPoolExecutor()
+
+
         # The initial population is an individual without transformations
         # so the algorithm starts by searching for simpler solutions first
         self.population.append(Individual())
@@ -215,13 +219,15 @@ class EvoTADASHI:
 
             start_time = time.time()
             if self.n_threads > 1:
-                with MPIPoolExecutor() as executor:
+                #with MPIPoolExecutor() as executor:
+                if True: #ill fix tabs later
                     kwargs = {
                         "benchmark":self.benchmark,
                         "base":self.base,
-                        "compiler_options":["-fopenmp", self.dataset]
+                        "compiler_options":["-fopenmp", self.dataset],
+                        "translator":"Polly",
                     }
-                    results = list(executor.map(
+                    results = list(self.executor.map(
                         remote_measure, 
                         [Polybench] * len(self.population),
                         [kwargs] * len(self.population), 
@@ -230,6 +236,7 @@ class EvoTADASHI:
                     for i in range(len(results)):
                         self.population[i].fitness = results[i][0] * -1 # so bigger fitness is better
                         #print("      Individual %d was evaluated on hostname"%i, results[i][1])
+                        self.evaluations[str(self.population[i].operation_list)]=results[i][0]*-1
             else:
                 [
                     i.getFitness(
