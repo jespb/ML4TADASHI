@@ -298,6 +298,7 @@ class EvoTADASHI:
             )
 
         print("Final model:", self.best_individual)
+        return
 
         #
         # < use parellel in the final model >
