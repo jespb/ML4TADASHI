@@ -159,22 +159,13 @@ class EvoTADASHI:
     t_size = None
     n_threads = None
     evaluations = None
-    base = "examples/polybench"
 
     def __init__(self, args):
         seed(args.seed)
-        print(f"Opening {args.benchmark}")
-        self.dataset = f"-D{args.dataset}_DATASET"
-        oflag = f"-O{args.oflag}"
-        print(f"Using {self.dataset}")
-        self.benchmark = args.benchmark
-        self.base = args.base
-        self.app_factory = Polybench(
-            args.benchmark,
-            base=self.base,
-            compiler_options=[self.dataset],
-            translator=Polly("clang"),
-        )
+        print(f"FUGAKU Opening {args.cls.__name__}")
+        self.cls = args.cls
+        self.kwargs = args.kwargs
+        self.app_factory = self.cls.mkapp(self.kwargs)
         self.app_factory.compile()
         self.timeout = timeit.timeit(self.app_factory.measure, number=1) * 2
         self.population_size = args.population_size
