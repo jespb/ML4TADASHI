@@ -257,5 +257,4 @@ class EvoTADASHI:
             )
 
         print("Final model:", self.best_individual)
-    
     return self.best_individual
