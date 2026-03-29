@@ -130,22 +130,13 @@ class EvoTADASHI:
     t_size = None
     n_threads = None
     evaluations = None
-    base = "examples/polybench"
 
     def __init__(self, args):
         seed(args.seed)
-        print(f"Opening {args.benchmark}")
-        self.dataset = f"-D{args.dataset}_DATASET"
-        oflag = f"-O{args.oflag}"
-        print(f"Using {self.dataset}")
-        self.benchmark = args.benchmark
-        self.base = args.base
-        self.app_factory = Polybench(
-            args.benchmark,
-            base=self.base,
-            compiler_options=[self.dataset],
-            translator=Polly("clang"),
-        )
+        print(f"FUGAKU Opening {args.cls.__name__}")
+        self.cls = args.cls
+        self.kwargs = args.kwargs
+        self.app_factory = self.cls.mkapp(self.kwargs)
         self.app_factory.compile()
         self.timeout = timeit.timeit(self.app_factory.measure, number=1) * 2
         self.population_size = args.population_size
@@ -192,22 +183,22 @@ class EvoTADASHI:
 
             start_time = time.time()
             if self.n_threads > 1:
-                # Using the MPI Executor previously initialized
-                kwargs = {
-                    "benchmark":self.benchmark,
-                    "base":self.base,
-                    "compiler_options":["-fopenmp", self.dataset],
-                    "translator":"Polly",
-                }
-                results = list(self.executor.map(
-                    remote_measure, 
-                    [Polybench] * len(self.population),
-                    [kwargs] * len(self.population), 
-                    [ind.operation_list for ind in self.population] 
-                ))
+                results = list(
+                    self.executor.map(
+                        remote_measure,
+                        [self.cls] * len(self.population),
+                        [self.kwargs] * len(self.population),
+                        [ind.operation_list for ind in self.population],
+                    )
+                )
                 for i in range(len(results)):
-                    self.population[i].fitness = results[i][0] * -1 # so bigger fitness is better
-                    self.evaluations[str(self.population[i].operation_list)]=results[i][0]*-1
+                    self.population[i].fitness = (
+                        results[i][0] * -1
+                    )  # so bigger fitness is better
+                    # print("      Individual %d was evaluated on hostname"%i, results[i][1])
+                    self.evaluations[str(self.population[i].operation_list)] = (
+                        results[i][0] * -1
+                    )
             else:
                 fitnesses = [
                     i.getFitness(
