@@ -157,3 +157,7 @@ def remote_measure(cls, kwargs, trs):
     tapp.compile()
     rv = tapp.measure()
     return rv, hostname
+
+
+def get_args():
+    return None
