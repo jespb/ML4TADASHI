@@ -214,17 +214,11 @@ class EvoTADASHI:
             if self.n_threads > 1:
                 # with MPIPoolExecutor() as executor:
                 if True:  # ill fix tabs later
-                    kwargs = {
-                        "benchmark": self.benchmark,
-                        "base": self.base,
-                        "compiler_options": ["-fopenmp", self.dataset],
-                        "translator": "Polly",
-                    }
                     results = list(
                         self.executor.map(
                             remote_measure,
-                            [Polybench] * len(self.population),
-                            [kwargs] * len(self.population),
+                            [self.cls] * len(self.population),
+                            [self.kwargs] * len(self.population),
                             [ind.operation_list for ind in self.population],
                         )
                     )
