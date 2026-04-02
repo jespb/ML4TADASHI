@@ -213,23 +213,22 @@ class EvoTADASHI:
             start_time = time.time()
             if self.n_threads > 1:
                 # with MPIPoolExecutor() as executor:
-                if True:  # ill fix tabs later
-                    results = list(
-                        self.executor.map(
-                            remote_measure,
-                            [self.cls] * len(self.population),
-                            [self.kwargs] * len(self.population),
-                            [ind.operation_list for ind in self.population],
-                        )
+                results = list(
+                    self.executor.map(
+                        remote_measure,
+                        [self.cls] * len(self.population),
+                        [self.kwargs] * len(self.population),
+                        [ind.operation_list for ind in self.population],
                     )
-                    for i in range(len(results)):
-                        self.population[i].fitness = (
-                            results[i][0] * -1
-                        )  # so bigger fitness is better
-                        # print("      Individual %d was evaluated on hostname"%i, results[i][1])
-                        self.evaluations[str(self.population[i].operation_list)] = (
-                            results[i][0] * -1
-                        )
+                )
+                for i in range(len(results)):
+                    self.population[i].fitness = (
+                        results[i][0] * -1
+                    )  # so bigger fitness is better
+                    # print("      Individual %d was evaluated on hostname"%i, results[i][1])
+                    self.evaluations[str(self.population[i].operation_list)] = (
+                        results[i][0] * -1
+                    )
             else:
                 [
                     i.getFitness(
