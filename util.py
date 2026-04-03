@@ -21,11 +21,10 @@ def random_args(node, tr):
 def getAllPossible(app, ignore=[]):
     scops = app.scops
     tmp = []
-    for si in range(len(scops)):
-        for sti in range(len(scops[si].schedule_tree)):
-            s = scops[si].schedule_tree[sti]
-            av = s.available_transformations
-            tmp.append((si, sti, av))
+    for si, s in enumerate(scops):
+        for ni, node in enumerate(s.schedule_tree):
+            av = node.available_transformations
+            tmp.append((si, ni, av))
 
     ret = []
     for x1, x2, trans in tmp:
