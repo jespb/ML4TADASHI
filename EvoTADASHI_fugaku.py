@@ -3,6 +3,7 @@
 import argparse
 import time
 import timeit
+import logging
 from pathlib import Path
 from random import choice, randint, randrange, seed
 from subprocess import CalledProcessError, TimeoutExpired
@@ -23,6 +24,7 @@ class Individual:
 
     def __init__(self, op: list = []):
         self.operation_list = op
+        self.logger = logging.getLogger(__name__)
 
     def __str__(self):
         f = "%.8f" % self.fitness if not self.fitness is None else "Not evaluated"
@@ -230,7 +232,7 @@ class EvoTADASHI:
                         results[i][0] * -1
                     )
             else:
-                [
+                fitness = [
                     i.getFitness(
                         self.app_factory,
                         self.n_trials,
@@ -239,6 +241,7 @@ class EvoTADASHI:
                     )
                     for i in self.population
                 ]
+                self.logger.info(f"{fitness=})
 
             self.population.sort(reverse=True)
 
