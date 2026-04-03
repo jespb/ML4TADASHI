@@ -191,13 +191,10 @@ class EvoTADASHI:
                     )
                 )
                 for i in range(len(results)):
-                    self.population[i].fitness = (
-                        results[i][0] * -1
-                    )  # so bigger fitness is better
+                    fitn = results[i][0] * -1
+                    self.population[i].fitness = fitn  # so bigger fitness is better
                     # print("      Individual %d was evaluated on hostname"%i, results[i][1])
-                    self.evaluations[str(self.population[i].operation_list)] = (
-                        results[i][0] * -1
-                    )
+                    self.evaluations[str(self.population[i].operation_list)] = fitn
             else:
                 fitnesses = [
                     i.getFitness(
