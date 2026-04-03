@@ -120,6 +120,52 @@ def evaluate(app, n_trials, timeout):
     return -1 * min(evals) 
 
 
+
+def search_and_apply_parallel(app, tr_list):
+    print("[ERROR] search_and_apply_parallel : Dont use this function, it will be RE-integrated after EvoAPPs")
+
+    app.reset_scops()
+    app.transform_list(tr_list)
+
+    trs = searchFor(app, "set_parallel")
+    trs = [[index, TrEnum.SET_PARALLEL, 0] for index in trs]
+
+    trs = trs[::-1]
+    tmp = []
+    for t in trs:
+        tmp.append([getDepth(app, t[0]), t])
+    tmp.sort()
+    trs = [tmp[-1][1]]
+
+    for t in trs:
+        scops[0].reset()
+        scops[0].transform_list(full_tr_list)
+        valid = scops[0].transform_list([t])
+        if valid[-1]:
+            full_tr_list.append(t)
+    scops[0].reset()
+    valid = scops[0].transform_list(full_tr_list)
+    print(valid)
+
+    tiled = app.generate_code()
+    tiled.compile()
+
+    improved = tiled.measure()
+    print(
+        "Time with parallel: %f (%.3fx speedup)"
+        % (improved, self.evaluations["[]"] / improved)
+    )
+
+    print("FINAL transformation_list=[")
+    [print("   %s," % str(t)) for t in full_tr_list]
+    print("]")
+
+
+#
+# Functions to evaluate using multiprocess and mpirun
+#
+
+
 def multiProcess_evaluation(a):
     app, n_trials, timeout, pre_evaluated = a
     
@@ -130,14 +176,13 @@ def multiProcess_evaluation(a):
 
 
 
-
-
 from mpi4py.futures import MPIPoolExecutor, as_completed
 from tadashi import TrEnum
 from tadashi.apps import Polybench
 try:
     from tadashi.translators import Polly
 except:
+    # The user may not be using Polly
     pass
 import socket
 

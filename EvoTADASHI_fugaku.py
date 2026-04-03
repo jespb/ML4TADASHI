@@ -13,15 +13,12 @@ from tadashi import TrEnum
 from tadashi.apps import Polybench, Simple
 from tadashi.translators import Polly
 
-
 from util import *
-
 
 
 class Individual:
     operation_list: list = None
     fitness: float = None
-    broken = False
 
     def __init__(self, op: list = []):
         self.operation_list = op
@@ -44,57 +41,30 @@ class Individual:
         """
         return self.getFitness() > other.getFitness()
 
-    def generateCode(self, app_factory):
-        return transformAndCompile(app_factory, self.operation_list)
-
-
     def getFitness(
-        self, app_factory=None, n_trials: int = None, timeout=9999, evaluations=None
+        self, app=None, n_trials: int = None, timeout=9999, evaluations=None
     ):
         """
-        app_factory and n_trials are not requires if the fitness is already calculated
+        app: your app
+        n_trials: how many times your are running the app during evaluation
+        timeout: how many seconds are you allowed to run the app
+        evaluatation: a dictionary of transformations lists and previous measures, to avoid evaluating to identical solutions
+        ---
+        app and n_trials are not requires if the fitness is already calculated (e.g., for sorting)
         """
+
+        # The dictionary is provided and the solution is in it
         if not evaluations is None and str(self.operation_list) in evaluations:
             self.fitness = evaluations[str(self.operation_list)]
 
         if self.fitness is None:
-            self.fitness = evaluateList(app_factory, self.operation_list, n_trials, timeout)
+            self.fitness = evaluateList(app, self.operation_list, n_trials, timeout)
 
+        # Update dictionary
         if not evaluations is None:
             evaluations[str(self.operation_list)] = self.fitness
 
         return self.fitness
-
-    def isLegal(self, app_factory):
-        return isTransformationListLegal(app_factory, self.operation_list)
-
-    def crossover(self, other, app_factory=None):
-        # 20% chance to crossover, 0% if either parents have length 0
-        if (
-            randint(0, 9) < 2
-            and len(self.operation_list) * len(other.operation_list) > 0
-        ):
-            p1 = self.operation_list
-            p2 = other.operation_list
-
-            xop1 = randint(0, len(p1) - 1)
-            xop2 = randint(0, len(p2) - 1)
-
-            o1 = p1[:xop1] + p2[:xop2]
-            o2 = p2[:xop2] + p1[:xop1]
-
-            i1 = Individual(o1)
-            i2 = Individual(o2)
-
-            ret = []
-            for i in [i1, i2]:
-                if i.isLegal(app_factory):
-                    ret.append(i)
-
-            return ret
-
-        else:
-            return [self, other]
 
     def mutate(self, app=None):
         #  5% not mutate
@@ -194,7 +164,7 @@ class EvoTADASHI:
 
     def tournament(self):
         """
-        Requires: sorted population
+        Requires: sorted population (best to worst)
         """
         return self.population[
             min([randint(0, len(self.population) - 1) for _ in range(self.t_size)])
@@ -219,26 +189,24 @@ class EvoTADASHI:
 
             start_time = time.time()
             if self.n_threads > 1:
-                #with MPIPoolExecutor() as executor:
-                if True: #ill fix tabs later
-                    kwargs = {
-                        "benchmark":self.benchmark,
-                        "base":self.base,
-                        "compiler_options":["-fopenmp", self.dataset],
-                        "translator":"Polly",
-                    }
-                    results = list(self.executor.map(
-                        remote_measure, 
-                        [Polybench] * len(self.population),
-                        [kwargs] * len(self.population), 
-                        [ind.operation_list for ind in self.population] 
-                    ))
-                    for i in range(len(results)):
-                        self.population[i].fitness = results[i][0] * -1 # so bigger fitness is better
-                        #print("      Individual %d was evaluated on hostname"%i, results[i][1])
-                        self.evaluations[str(self.population[i].operation_list)]=results[i][0]*-1
+                # Using the MPI Executor previously initialized
+                kwargs = {
+                    "benchmark":self.benchmark,
+                    "base":self.base,
+                    "compiler_options":["-fopenmp", self.dataset],
+                    "translator":"Polly",
+                }
+                results = list(self.executor.map(
+                    remote_measure, 
+                    [Polybench] * len(self.population),
+                    [kwargs] * len(self.population), 
+                    [ind.operation_list for ind in self.population] 
+                ))
+                for i in range(len(results)):
+                    self.population[i].fitness = results[i][0] * -1 # so bigger fitness is better
+                    self.evaluations[str(self.population[i].operation_list)]=results[i][0]*-1
             else:
-                [
+                fitnesses = [
                     i.getFitness(
                         self.app_factory,
                         self.n_trials,
@@ -248,40 +216,36 @@ class EvoTADASHI:
                     for i in self.population
                 ]
 
+            # Sort best to worst
             self.population.sort(reverse=True)
-
-            self.population = [p for p in self.population if not p.broken]
 
             end_time = time.time()
             print("Evaluation time:", end_time - start_time)
 
-            print("  Fitness values obtained:")
+            print("  Top-3 solutions found:")
             [print("   ", i.fitness, i) for i in self.population[:3]]
 
             if self.population[0] > self.best_individual:
                 self.best_individual = self.population[0]
                 print("  Updating best_individual to", self.best_individual)
 
-            # print("  Breeding phase")
+            # print("  Generating new population")
             start_time = time.time()
             new_pop = []
             while len(new_pop) < self.population_size:
-                #print("Breeding %d"%len(new_pop))
                 ind1 = self.tournament()
                 ind2 = self.tournament()
-                # print("    MUT")
                 ind1 = ind1.mutate(self.app_factory)
                 ind2 = ind2.mutate(self.app_factory)
-                # print("    XO")
                 if False:
-                    ret = ind1.crossover(ind2, self.app_factory)
+                    # TODO: Implement crossover
                 else:
                     ret = [ind1, ind2] # no crossover
                 new_pop.extend(ret)
             new_pop = new_pop[: self.population_size]
             self.population = new_pop
             end_time = time.time()
-            print("Breeding time:", end_time - start_time)
+            print("Reproduction time:", end_time - start_time)
 
             be = self.evaluations[str(self.best_individual.operation_list)]
             print(
@@ -290,55 +254,5 @@ class EvoTADASHI:
             )
 
         print("Final model:", self.best_individual)
-
-        #
-        # < use parellel in the final model >
-        #
-
-        try:
-            # TODO for each scop, add parallel to the deepest for
-            full_tr_list = self.best_individual.operation_list
-
-            app = self.app_factory
-            app.reset_scops()
-            scops = app.scops
-            valid = scops[0].transform_list(full_tr_list)
-
-            trs = searchFor(app, "set_parallel")
-            trs = [[index, TrEnum.SET_PARALLEL, 0] for index in trs]
-
-            trs = trs[::-1]
-            tmp = []
-            for t in trs:
-                tmp.append([getDepth(app, t[0]), t])
-            tmp.sort()
-            trs = [tmp[-1][1]]
-
-            for t in trs:
-                scops[0].reset()
-                scops[0].transform_list(full_tr_list)
-                valid = scops[0].transform_list([t])
-                if valid[-1]:
-                    full_tr_list.append(t)
-            scops[0].reset()
-            valid = scops[0].transform_list(full_tr_list)
-            print(valid)
-
-            tiled = app.generate_code()
-            tiled.compile()
-
-            improved = tiled.measure()
-            print(
-                "Time with parallel: %f (%.3fx speedup)"
-                % (improved, self.evaluations["[]"] / improved)
-            )
-
-            print("FINAL transformation_list=[")
-            [print("   %s," % str(t)) for t in full_tr_list]
-            print("]")
-        except ValueError:
-            print("[ERROR TRYING TO PARALLEL]", self.best_individual)
-
-        #
-        # </ use parellel in the final model >
-        #
+    
+    return self.best_individual
