@@ -8,7 +8,6 @@ from random import choice, randint, randrange, seed
 from subprocess import CalledProcessError, TimeoutExpired
 
 # import multiprocess as mp
-import tadashi
 from tadashi import TrEnum
 from tadashi.apps import Polybench, Simple
 from tadashi.translators import Polly
@@ -55,14 +54,14 @@ class Individual:
         """
 
         # The dictionary is provided and the solution is in it
-        if not evaluations is None and str(self.operation_list) in evaluations:
+        if evaluations is not None and str(self.operation_list) in evaluations:
             self.fitness = evaluations[str(self.operation_list)]
 
         if self.fitness is None:
             self.fitness = evaluateList(app, self.operation_list, n_trials, timeout)
 
         # Update dictionary
-        if not evaluations is None:
+        if evaluations is not None:
             evaluations[str(self.operation_list)] = self.fitness
 
         return self.fitness
@@ -232,6 +231,7 @@ class EvoTADASHI:
                 ind1 = ind1.mutate(self.app_factory)
                 ind2 = ind2.mutate(self.app_factory)
                 if False:
+                    pass
                     # TODO: Implement crossover
                 else:
                     ret = [ind1, ind2]  # no crossover
@@ -248,4 +248,5 @@ class EvoTADASHI:
             )
 
         print("Final model:", self.best_individual)
-    return self.best_individual
+
+        return self.best_individual
