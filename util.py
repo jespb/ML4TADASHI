@@ -1,6 +1,5 @@
-import argparse
 from random import choice
-from subprocess import CalledProcessError, TimeoutExpired
+from subprocess import TimeoutExpired
 
 from tadashi import TrEnum
 
@@ -205,19 +204,3 @@ def remote_measure(cls, kwargs, trs):
     tapp.compile()
     rv = tapp.measure()
     return rv, hostname
-
-
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--seed", type=int, default=47)
-    parser.add_argument("--n-trials", type=int, default=2)
-    parser.add_argument("--n-threads", type=int, default=1)
-    parser.add_argument("--method", type=str, default="EvoTADASHI")
-    parser.add_argument("--population-size", type=int, default=50)
-    parser.add_argument("--tournament-size", type=int, default=2)
-    parser.add_argument("--max-gen", type=int, default=10)
-    parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
-    parser.add_argument("--beam-width", type=int, default=10)
-    parser.add_argument("--max-depth", type=int, default=10)
-    parser.add_argument("--allow-omp", action=argparse.BooleanOptionalAction)
-    return parser.parse_args()
