@@ -15,7 +15,6 @@ from tadashi.apps import Polybench, Simple
 from util import *
 
 
-
 class Individual:
     operation_list: list = None
     fitness: float = None
@@ -45,7 +44,6 @@ class Individual:
     def generateCode(self, app_factory):
         return transformAndCompile(app_factory, self.operation_list)
 
-
     def getFitness(
         self, app_factory=None, n_trials: int = None, timeout=9999, evaluations=None
     ):
@@ -56,7 +54,9 @@ class Individual:
             self.fitness = evaluations[str(self.operation_list)]
 
         if self.fitness is None:
-            self.fitness = evaluateList(app_factory, self.operation_list, n_trials, timeout)
+            self.fitness = evaluateList(
+                app_factory, self.operation_list, n_trials, timeout
+            )
 
         if not evaluations is None:
             evaluations[str(self.operation_list)] = self.fitness
@@ -116,13 +116,12 @@ class Individual:
             scops = app.scops[0]
 
             op_list = self.operation_list[:]
-            
+
             scops.transform_list(op_list)
 
             st = scops.schedule_tree
 
             possible = getAllPossible(app, ignore=["set_parallel"])
-
 
             at = 0
             found = False
@@ -167,11 +166,11 @@ class EvoTADASHI:
         self.app_factory = Polybench(args.benchmark, compiler_options=[dataset, oflag])
         self.app_factory.compile()
         self.timeout = timeit.timeit(self.app_factory.measure, number=1) * 2
-        self.population_size=args.population_size
-        self.max_gen=args.max_gen
-        self.n_trials=args.n_trials
-        self.n_threads=args.n_threads
-        self.use_heuristic=args.use_heuristic
+        self.population_size = args.population_size
+        self.max_gen = args.max_gen
+        self.n_trials = args.n_trials
+        self.n_threads = args.n_threads
+        self.use_heuristic = args.use_heuristic
         self.t_size = args.tournament_size
         self.population = []
         self.evaluations = {}
@@ -215,7 +214,9 @@ class EvoTADASHI:
             ]
 
             trs2 = searchFor(app, "tile2d")
-            trs2D = [[index, TrEnum.TILE2D, tile_size, tile_size] for index in trs2[::-1]]
+            trs2D = [
+                [index, TrEnum.TILE2D, tile_size, tile_size] for index in trs2[::-1]
+            ]
             trs3D.extend(trs2D)
             trs3D.sort()
             trs3D = trs3D[::-1]
@@ -242,7 +243,6 @@ class EvoTADASHI:
         # so the algorithm starts by searching for simpler solutions first
         self.population.append(Individual())
 
-
     def tournament(self):
         """
         Requires: sorted population
@@ -250,7 +250,6 @@ class EvoTADASHI:
         return self.population[
             min([randint(0, len(self.population) - 1) for _ in range(self.t_size)])
         ]
-
 
     def fit(self):
 
@@ -333,7 +332,7 @@ class EvoTADASHI:
                 if False:
                     ret = ind1.crossover(ind2, self.app_factory)
                 else:
-                    ret = [ind1, ind2] # no crossover
+                    ret = [ind1, ind2]  # no crossover
                 new_pop.extend(ret)
             new_pop = new_pop[: self.population_size]
             self.population = new_pop
