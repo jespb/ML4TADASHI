@@ -17,22 +17,6 @@ def random_args(node, tr):
     return choice(node.get_args(tr, start=-64, end=64))
 
 
-def getAllPossible(app, ignore=[]):
-    scops = app.scops
-    tmp = []
-    for si, s in enumerate(scops):
-        for ni, node in enumerate(s.schedule_tree):
-            av = node.available_transformations
-            tmp.append((si, ni, av))
-
-    ret = []
-    for x1, x2, trans in tmp:
-        for tran in trans:
-            if not tran in ignore:
-                ret.append([x1, x2, tran])
-    return ret
-
-
 def searchFor(app, tr_name):
     assert False
     scops = app.scops
@@ -74,7 +58,7 @@ def isNextTransformationLegal(app, tr):
         app.transform_list(tr)
         return app.legal
     except:
-        print("Failed to verify legality:", tr_list)
+        print("Failed to verify legality:", tr)
         return False
 
 

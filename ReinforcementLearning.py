@@ -81,7 +81,7 @@ class TadashiEnv(gym.Env):
         scops.transform_list(self.transformation_list)
 
         # Get all possible transformations
-        self.possible_actions = getAllPossible(self.app_factory, ignore=[])
+        self.possible_actions = self.app_factory.get_all_transformations()
 
     def _get_obs(self):
         """

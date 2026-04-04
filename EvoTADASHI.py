@@ -121,7 +121,7 @@ class Individual:
 
             st = scops.schedule_tree
 
-            possible = getAllPossible(app, ignore=["set_parallel"])
+            possible = app.get_all_transformations()
 
             at = 0
             found = False

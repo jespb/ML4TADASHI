@@ -9,7 +9,7 @@ from subprocess import CalledProcessError, TimeoutExpired
 
 # import multiprocess as mp
 from tadashi import TrEnum
-from tadashi.apps import Polybench, Simple
+from tadashi.apps import App
 from tadashi.translators import Polly
 
 from util import *
@@ -66,7 +66,7 @@ class Individual:
 
         return self.fitness
 
-    def mutate(self, app=None):
+    def mutate(self, app: App = None):
         #  5% not mutate
         #  5% lose last operation or not mutate
         # 90% of appending a new operation at the end
@@ -89,7 +89,7 @@ class Individual:
             op_list = self.operation_list[:]
             app.transform_list(op_list)
 
-            possible = getAllPossible(app, ignore=["set_parallel", "scale"])
+            possible = app.get_all_transformations()
 
             at = 0
             found = False
