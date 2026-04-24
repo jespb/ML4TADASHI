@@ -161,7 +161,7 @@ def multiProcess_evaluation(a):
     return evaluate(app, n_trials, timeout)
 
 
-from mpi4py.futures import MPIPoolExecutor, as_completed
+#from mpi4py.futures import MPIPoolExecutor, as_completed
 from tadashi import TrEnum
 from tadashi.apps import Polybench
 

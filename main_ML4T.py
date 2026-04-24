@@ -1,4 +1,7 @@
+
 import argparse
+
+from tadashi.apps import Polybench, Simple
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -13,75 +16,34 @@ if __name__ == "__main__":
     parser.add_argument("--population-size", type=int, default=50)
     parser.add_argument("--tournament-size", type=int, default=2)
     parser.add_argument("--max-gen", type=int, default=10)
-    parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--beam-width", type=int, default=10)
     parser.add_argument("--max-depth", type=int, default=10)
     parser.add_argument("--allow-omp", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--cls", type=str, default="")
     args = parser.parse_args()
+
+
+    translator = None
+    if args.cls.lower() == "polly":
+        from tadashi.translators import Polly
+        translator = Polly()
+
+    app = Polybench(args.benchmark, compiler_options=["-D%s_DATASET" % args.dataset, "-O%d"%args.oflag])
 
     if args.method == "EvoTADASHI":
         from EvoTADASHI import EvoTADASHI
-    elif args.method == "FugakuEvoTADASHI":
-        from EvoTADASHI_fugaku import EvoTADASHI
+        method = EvoTADASHI(args, app)
     elif args.method == "BeamSearch":
         from BeamSearch import BeamSearch
+        method = BeamSearch(args)
     elif args.method == "Heuristic":
         from Heuristic import Heuristic
+        method = Heuristic(args)
     else:
         print("Method not implemented %s" % args.method)
         assert False
 
-    if args.benchmark == "all":
-        pb = [
-            "jacobi-1d",
-            "bicg",
-            "atax",
-            "gesummv",
-            "trisolv",
-            "durbin",
-            "mvt",
-            "gemver",
-            "deriche",
-            "doitgen",
-            "gemm",
-            "syrk",
-            "2mm",
-            "trmm",
-            "symm",
-            "jacobi-2d",
-            "fdtd-2d",
-            "cholesky",
-            "syr2k",
-            "3mm",
-            "correlation",
-            "covariance",
-            "heat-3d",
-            "gramschmidt",
-            "ludcmp",
-            "lu",
-            "nussinov",
-            "adi",
-            "floyd-warshall",
-            "seidel-2d",
-        ]
-        pb = pb[:]
-        for benchmark in pb:
-            args.benchmark = benchmark
-            print("\n\n\n")
-            if args.method in ["EvoTADASHI", "FugakuEvoTADASHI"]:
-                method = EvoTADASHI(args)
-            elif args.method == "BeamSearch":
-                method = BeamSearch(args)
-            elif args.method == "Heuristic":
-                method = Heuristic(args)
-            print(str(args) + "\n")
-            method.fit()
-    else:
-        if args.method in ["EvoTADASHI", "FugakuEvoTADASHI"]:
-            method = EvoTADASHI(args)
-        elif args.method == "BeamSearch":
-            method = BeamSearch(args)
-        elif args.method == "Heuristic":
-            method = Heuristic(args)
-        print(str(args) + "\n")
-        method.fit()
+
+    print(str(args) + "\n")
+    method.fit()
