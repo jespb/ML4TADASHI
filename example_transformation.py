@@ -4,46 +4,26 @@ from tadashi.apps import Polybench
 from tadashi.translators import Polly
 
 
-
-
-def print_available_transformations(app):
-    """
-    Prints available transformations (they might not be legal)
-    """
-    for s in range(len(app.scops)):
-        st = app.scops[s].schedule_tree
-        for n in range(len(st)):
-            print("%3d, %3d," %(s, n), st[n].available_transformations)
-
-
-
-
-
 translator = [None, Polly()][1]
 
+benchmark = "linear-algebra/blas/gemm"
+compiler_options = ["-DEXTRALARGE_DATASET", "-O3" if translator is None else ""]
+
 gemm = Polybench(
-    "linear-algebra/blas/gemm",
-    compiler_options=["-DEXTRALARGE_DATASET"],
+    benchmark,
+    compiler_options=compiler_options,
     translator = translator,
 )
 
-print(f"{gemm.user_compiler_options=}")
+print("Transforming", benchmark)
+print(gemm.user_compiler_options)
 
 gemm.compile()
 
-print(f"{gemm.measure()=}")
+print("Baseline measure:", gemm.measure())
 
-oa = str(gemm.dump_arrays())
-
-for tile_size in [20, 64]:
+for tile_size in [32, 128]:
     gemm.reset_scops()
-
-    sts = gemm.scops[1].schedule_tree
-
-    #print("\n\n\n"+ sts[1].yaml_str)
-
-    print_available_transformations(gemm)
-
 
     if translator is None:
         trs = [
@@ -59,16 +39,10 @@ for tile_size in [20, 64]:
 
     gemm.transform_list(trs)
 
-    #print("\n\n\n"+ sts[1].yaml_str)
-
-    tiled = gemm.generate_code(alt_infix=f"_tiled{tile_size}")
     tiled = gemm.generate_code(alt_infix=f"_tiled{tile_size}")
 
-    print(f"{tile_size=} : {tiled.measure()=}")
+    print("Measure with tile size %d:"%tile_size, tiled.measure())
 
-    na = str(gemm.dump_arrays())
-
-    print("Matches original output:", oa==na)
 
 
 print("DONE")
