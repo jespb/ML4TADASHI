@@ -127,7 +127,7 @@ class EvoTADASHI:
     n_trials = None
     app = None
     t_size = None
-    n_threads = None
+    use_mpi = False
     evaluations = None
 
     def __init__(self, args, app):
@@ -141,7 +141,7 @@ class EvoTADASHI:
         self.population_size = args.population_size
         self.max_gen = args.max_gen
         self.n_trials = args.n_trials
-        self.n_threads = args.n_threads
+        self.use_mpi = args.use_mpi
         self.use_heuristic = args.use_heuristic
         self.t_size = args.tournament_size
         self.population = []
@@ -149,7 +149,7 @@ class EvoTADASHI:
 
         print("USING TIME LIMIT:", self.timeout)
 
-        if self.n_threads > 1:
+        if self.use_mpi > 1:
             self.executor = MPIPoolExecutor()
 
         # The initial population is an individual without transformations
@@ -181,7 +181,7 @@ class EvoTADASHI:
             print("Gen %d" % gen)
 
             start_time = time.time()
-            if self.n_threads > 1:
+            if self.use_mpi > 1:
                 results = list(
                     self.executor.map(
                         remote_measure,

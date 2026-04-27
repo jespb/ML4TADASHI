@@ -161,15 +161,19 @@ def multiProcess_evaluation(a):
     return evaluate(app, n_trials, timeout)
 
 
-#from mpi4py.futures import MPIPoolExecutor, as_completed
+#try:
+#    from mpi4py.futures import MPIPoolExecutor, as_completed
+#except:
+#    print("[Import Error] mpi4py")
+
 from tadashi import TrEnum
 from tadashi.apps import Polybench
 
 try:
     from tadashi.translators import Polly
 except:
-    # The user may not be using Polly
-    pass
+    print("[Import Error] Polly")
+
 import socket
 
 
@@ -179,6 +183,9 @@ def app_from_kwargs(kwargs):
 
 
 def remote_measure(cls, kwargs, trs):
+    """
+    For distributed evaluations using mpi4py
+    """
     print(f"{trs=}")
     hostname = socket.gethostname()
     print(f"{hostname=}")

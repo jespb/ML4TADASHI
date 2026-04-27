@@ -11,7 +11,6 @@ if __name__ == "__main__":
     parser.add_argument("--oflag", type=int, default=3)
     parser.add_argument("--seed", type=int, default=47)
     parser.add_argument("--n-trials", type=int, default=2)
-    parser.add_argument("--n-threads", type=int, default=1)
     parser.add_argument("--method", type=str, default="EvoTADASHI")
     parser.add_argument("--population-size", type=int, default=50)
     parser.add_argument("--tournament-size", type=int, default=2)
@@ -19,7 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("--use-heuristic", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--beam-width", type=int, default=10)
     parser.add_argument("--max-depth", type=int, default=10)
-    parser.add_argument("--allow-omp", action=argparse.BooleanOptionalAction)
+    parser.add_argument("--use-mpi", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--cls", type=str, default="")
     args = parser.parse_args()
 
