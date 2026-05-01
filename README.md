@@ -30,13 +30,15 @@ This heuristic proposed a list of transformations using a single evaluation, mak
 
 ## How to use:
 
-$ python main.py [args]
+```sh
+python main.py [args]
+```
 
+```text
 --method Heuristic|BeamSearch|EvoTADASHI(default)
-
 --benchmark all|polybench nem (e.g. gemm)|jacobi-1d(default)
-
 --dataset MINI|SMALL|LARGE(default)|EXTRALARGE
+```
 
 for other arguments, check the main.py file
 
@@ -48,22 +50,23 @@ for other arguments, check the main.py file
 
 [2] EvoTADASHI: (to be published at EvoAPPs'26 in April 2026)
 
+```bibtex
 @InProceedings{evotadashi,
-author="Batista, Jo{\~a}o Eduardo
-and Vatai, Emil
-and Drozd, Aleksandr
-and Wahib, Mohamed",
-editor = "Garc\’ia-S\’anchez, Pablo
-and D\’iaz-\’Alvarez, Josefa, 
-and Murphy, Aidan",
-title =  {{EvoTADASHI: Genetic Programming for High-Performance Code Optimization}},
-booktitle="Applications of Evolutionary Computation",
-year = 2026,
-publisher="Springer Nature Switzerland",
-address="Cham",
+  author = "Batista, Jo{\~a}o Eduardo
+            and Vatai, Emil
+            and Drozd, Aleksandr
+            and Wahib, Mohamed",
+  editor = "Garc\’ia-S\’anchez, Pablo
+            and D\’iaz-\’Alvarez, Josefa,
+            and Murphy, Aidan",
+  title = {{EvoTADASHI: Genetic Programming for High-Performance Code Optimization}},
+  booktitle = "Applications of Evolutionary Computation",
+  year = 2026,
+  publisher = "Springer Nature Switzerland",
+  address = "Cham",
 }
+```
 
 [3] Beam Search on TADASHI: please cite [2]
 
 [4] Heuristic on TADASHI: please cite [1] or [2]
-
