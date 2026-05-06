@@ -13,18 +13,6 @@ if __name__ == "__main__":
 
     parser.add_argument("--method", type=str, default="EvoTADASHI")
 
-    parser.add_argument("--init_seed", type=int, default=47)
-    parser.add_argument("--population-size", type=int, default=50)
-    parser.add_argument("--tournament-size", type=int, default=2)
-    parser.add_argument("--max-gen", type=int, default=10)
-    parser.add_argument("--n-trials", type=int, default=2)
-    parser.add_argument(
-        "--use-mpi", action=argparse.BooleanOptionalAction, default=False
-    )
-    parser.add_argument(
-        "--use-heuristic", action=argparse.BooleanOptionalAction, default=False
-    )
-
     parser.add_argument("--max-depth", type=int, default=10)
     parser.add_argument("--beam-width", type=int, default=10)
     args = parser.parse_args()
@@ -42,8 +30,9 @@ if __name__ == "__main__":
     )
 
     if args.method == "EvoTADASHI":
-        from EvoTADASHI import EvoTADASHI
+        from EvoTADASHI import EvoTADASHI, get_args
 
+        args = get_args()
         method = EvoTADASHI(
             app,
             args.init_seed,

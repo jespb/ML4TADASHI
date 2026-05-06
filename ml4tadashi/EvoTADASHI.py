@@ -255,3 +255,19 @@ class EvoTADASHI:
         print("Final model:", self.best_individual)
 
         return self.best_individual
+
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--init_seed", type=int, default=47)
+    parser.add_argument("--population-size", type=int, default=50)
+    parser.add_argument("--tournament-size", type=int, default=2)
+    parser.add_argument("--max-gen", type=int, default=10)
+    parser.add_argument("--n-trials", type=int, default=2)
+    parser.add_argument(
+        "--use-mpi", action=argparse.BooleanOptionalAction, default=False
+    )
+    parser.add_argument(
+        "--use-heuristic", action=argparse.BooleanOptionalAction, default=False
+    )
+    return parser.parse_args()
