@@ -130,20 +130,28 @@ class EvoTADASHI:
     use_mpi = False
     evaluations = None
 
-    def __init__(self, args, app):
-        seed(args.seed)
-        #print(f"FUGAKU Opening {args.cls.__name__}")
-        #self.cls = args.cls
-        #self.kwargs = args.kwargs
-        self.app_factory = app #self.cls.mkapp(self.kwargs)
+    def __init__(
+        self,
+        app,
+        init_seed,
+        population_size,
+        tournament_size,
+        max_gen,
+        n_trials,
+        use_mpi,
+        use_heuristic,
+    ):
+        self.seed = init_seed
+        seed(init_seed)
+        self.app_factory = app
         self.app_factory.compile()
         self.timeout = timeit.timeit(self.app_factory.measure, number=1) * 2
-        self.population_size = args.population_size
-        self.max_gen = args.max_gen
-        self.n_trials = args.n_trials
-        self.use_mpi = args.use_mpi
-        self.use_heuristic = args.use_heuristic
-        self.t_size = args.tournament_size
+        self.population_size = population_size
+        self.max_gen = max_gen
+        self.n_trials = n_trials
+        self.use_mpi = use_mpi
+        self.use_heuristic = use_heuristic
+        self.t_size = tournament_size
         self.population = []
         self.evaluations = {}
 
