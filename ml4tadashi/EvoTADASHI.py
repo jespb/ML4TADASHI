@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
+import logging
 import time
 import timeit
 from pathlib import Path
@@ -18,6 +19,7 @@ from util import *
 class Individual:
     operation_list: list = None
     fitness: float = None
+    logger: logging.Logger = logging.getLogger(__name__)
 
     def __init__(self, op: list = []):
         self.operation_list = op
@@ -88,7 +90,7 @@ class Individual:
 
             op_list = self.operation_list[:]
             app.transform_list(op_list)
-
+            logging.info(f"Mutating: {op_list}")
             possible = app.get_all_transformations()
 
             at = 0

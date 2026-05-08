@@ -1,7 +1,10 @@
+import logging
 from random import choice
 from subprocess import TimeoutExpired
 
 from tadashi import TrEnum
+
+logger = logging.getLogger(__file__)
 
 
 def random_args(node, tr):
@@ -48,8 +51,10 @@ def isTransformationListLegal(app, tr_list):
     try:
         app.transform_list(tr_list)
         return app.legal
-    except:
-        print("Failed to verify legality:", tr_list)
+    except Exception as e:
+        logger.error("Failed to verify legality:")
+        logger.error(f"{tr=}")
+        logger.error(e)
         return False
 
 
@@ -57,8 +62,10 @@ def isNextTransformationLegal(app, tr):
     try:
         app.transform_list(tr)
         return app.legal
-    except:
-        print("Failed to verify legality:", tr)
+    except Exception as e:
+        logger.error("Failed to verify legality:")
+        logger.error(f"{tr=}")
+        logger.error(e)
         return False
 
 
@@ -73,7 +80,7 @@ def transformAndCompile(app, op_list):
 def isOutputMatching(instr, app, op_list):
     app.reset_scops()
     app.transform_list(op_list)
-    tapp = app_factory.generate_code()
+    tapp = app.generate_code()
     arrays_transformed = tapp.dump_arrays()
     if instr == arrays_transformed:
         print("The output matches the original")
@@ -161,9 +168,9 @@ def multiProcess_evaluation(a):
     return evaluate(app, n_trials, timeout)
 
 
-#try:
+# try:
 #    from mpi4py.futures import MPIPoolExecutor, as_completed
-#except:
+# except:
 #    print("[Import Error] mpi4py")
 
 from tadashi import TrEnum
