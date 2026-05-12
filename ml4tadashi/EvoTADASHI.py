@@ -141,8 +141,8 @@ class EvoTADASHI:
         tournament_size,
         max_gen,
         n_trials,
-        use_mpi,
-        use_heuristic,
+        use_mpi=False,
+        use_heuristic=False,
     ):
         self.seed = init_seed
         seed(init_seed)
