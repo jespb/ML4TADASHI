@@ -34,13 +34,13 @@ class Individual:
         tmp += "]"
         return "%s --- %s" % (tmp, f)
 
-    def __gt__(self, other):
+    def __gt__(self, other: Individual):
         """
         You must calculate everyones fitness before sorting
         """
-        return self.getFitness() > other.getFitness()
+        return self.get_fitness() > other.get_fitness()
 
-    def getFitness(
+    def get_fitness(
         self, app=None, n_trials: int = None, timeout=9999, evaluations=None
     ):
         """
