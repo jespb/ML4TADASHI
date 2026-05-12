@@ -260,7 +260,7 @@ class EvoTADASHI:
         return self.best_individual
 
 
-def get_mlargs_parser(parser: Optional[argparse.ArgumentParser] = None):
+def get_parser(parser: Optional[argparse.ArgumentParser] = None):
     if not parser:
         parser = argparse.ArgumentParser()
     parser.add_argument("--init_seed", type=int, default=42)
