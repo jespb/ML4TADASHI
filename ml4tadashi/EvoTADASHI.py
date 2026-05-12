@@ -4,17 +4,13 @@ import argparse
 import logging
 import time
 import timeit
-from pathlib import Path
-from random import choice, randint, randrange, seed
-from subprocess import CalledProcessError, TimeoutExpired
+from random import randint, seed
 from typing import Optional
 
 # import multiprocess as mp
-from tadashi import TrEnum
 from tadashi.apps import App
-from tadashi.translators import Polly
 
-from .util import *
+from . import util
 
 
 class Individual:
@@ -61,7 +57,9 @@ class Individual:
             self.fitness = evaluations[str(self.operation_list)]
 
         if self.fitness is None:
-            self.fitness = evaluateList(app, self.operation_list, n_trials, timeout)
+            self.fitness = util.evaluateList(
+                app, self.operation_list, n_trials, timeout
+            )
 
         # Update dictionary
         if evaluations is not None:
@@ -102,12 +100,12 @@ class Individual:
 
                 x1, x2, tran = possible.pop(randint(0, len(possible) - 1))
                 node = app.scops[x1].schedule_tree[x2]  # here (check below)
-                args = random_args(node, tran)
+                args = util.random_args(node, tran)
 
                 op = [x1, x2, tran, *args]
                 # print("IN MUT", op)
 
-                if isNextTransformationLegal(app, [op]):
+                if util.isNextTransformationLegal(app, [op]):
                     op_list.append(op)
                     return Individual(op_list)
                 else:
@@ -195,7 +193,7 @@ class EvoTADASHI:
             if self.use_mpi > 1:
                 results = list(
                     self.executor.map(
-                        remote_measure,
+                        util.remote_measure,
                         [self.cls] * len(self.population),
                         [self.kwargs] * len(self.population),
                         [ind.operation_list for ind in self.population],
