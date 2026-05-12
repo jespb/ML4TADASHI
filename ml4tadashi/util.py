@@ -1,4 +1,5 @@
 import logging
+import socket
 from random import choice
 from subprocess import TimeoutExpired
 
@@ -168,35 +169,13 @@ def multiProcess_evaluation(a):
     return evaluate(app, n_trials, timeout)
 
 
-# try:
-#    from mpi4py.futures import MPIPoolExecutor, as_completed
-# except:
-#    print("[Import Error] mpi4py")
-
-from tadashi import TrEnum
-from tadashi.apps import Polybench
-
-try:
-    from tadashi.translators import Polly
-except:
-    print("[Import Error] Polly")
-
-import socket
-
-
-def app_from_kwargs(kwargs):
-    kwargs["translator"] = Polly()
-    return Polybench(**kwargs)
-
-
-def remote_measure(cls, kwargs, trs):
+def remote_measure(app, trs):
     """
     For distributed evaluations using mpi4py
     """
     print(f"{trs=}")
     hostname = socket.gethostname()
     print(f"{hostname=}")
-    app = cls.mkapp(kwargs)
     app.transform_list(trs)
     tapp = app.generate_code(alt_infix=f"_evot_{hostname}", ephemeral=False)
     tapp.compile()

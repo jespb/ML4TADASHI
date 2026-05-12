@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import annotations
 
 import argparse
 import logging
@@ -6,6 +7,8 @@ import time
 import timeit
 from random import randint, seed
 from typing import Optional
+
+from mpi4py.futures import MPIPoolExecutor
 
 # import multiprocess as mp
 from tadashi.apps import App
@@ -190,12 +193,12 @@ class EvoTADASHI:
             print("Gen %d" % gen)
 
             start_time = time.time()
-            if self.use_mpi > 1:
+            if self.use_mpi:
+                print(">>>>>>>>> REMOTEE EXECUTION")
                 results = list(
                     self.executor.map(
                         util.remote_measure,
-                        [self.cls] * len(self.population),
-                        [self.kwargs] * len(self.population),
+                        [self.app_factory] * len(self.population),
                         [ind.operation_list for ind in self.population],
                     )
                 )
