@@ -134,13 +134,13 @@ class EvoTADASHI:
     def __init__(
         self,
         app,
-        init_seed,
-        population_size,
-        tournament_size,
-        max_gen,
-        n_trials,
-        use_mpi=False,
-        use_heuristic=False,
+        init_seed: int = 42,
+        population_size: int = 10,
+        tournament_size: int = 2,
+        max_gen: int = 10,
+        n_trials: int = 2,
+        use_mpi: bool = False,
+        use_heuristic: bool = False,
     ):
         self.seed = init_seed
         seed(init_seed)
@@ -158,7 +158,7 @@ class EvoTADASHI:
 
         print("USING TIME LIMIT:", self.timeout)
 
-        if self.use_mpi > 1:
+        if self.use_mpi:
             self.executor = MPIPoolExecutor()
 
         # The initial population is an individual without transformations
@@ -176,12 +176,12 @@ class EvoTADASHI:
     def fit(self):
 
         self.best_individual = self.population[0]
-        self.best_individual.getFitness(
+        self.best_individual.get_fitness(
             self.app_factory, self.n_trials, evaluations=self.evaluations
         )
         print(
             "Measure without transformations:",
-            self.best_individual.getFitness(
+            self.best_individual.get_fitness(
                 self.app_factory, self.n_trials, evaluations=self.evaluations
             ),
         )
@@ -206,7 +206,7 @@ class EvoTADASHI:
                     self.evaluations[str(self.population[i].operation_list)] = fitn
             else:
                 fitnesses = [
-                    i.getFitness(
+                    i.get_fitness(
                         self.app_factory,
                         self.n_trials,
                         timeout=self.timeout,
