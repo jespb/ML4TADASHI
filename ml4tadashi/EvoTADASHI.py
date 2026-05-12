@@ -9,11 +9,11 @@ from random import randint, seed
 from typing import Optional
 
 from mpi4py.futures import MPIPoolExecutor
-
-# import multiprocess as mp
 from tadashi.apps import App
 
 from . import util
+
+# import multiprocess as mp
 
 
 class Individual:
@@ -194,7 +194,6 @@ class EvoTADASHI:
 
             start_time = time.time()
             if self.use_mpi:
-                print(">>>>>>>>> REMOTEE EXECUTION")
                 results = list(
                     self.executor.map(
                         util.remote_measure,
