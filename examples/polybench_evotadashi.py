@@ -1,59 +1,43 @@
 import argparse
+from typing import Optional
 
+from ml4tadashi.EvoTADASHI import EvoTADASHI
+from ml4tadashi.EvoTADASHI import get_parser as get_mlargs_parser
 from tadashi import translators
 from tadashi.apps import Polybench, Simple
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+
+def get_appargs_parser(
+    parser: Optional[argparse.ArgumentParser] = None,
+) -> argparse.ArgumentParser:
+    if not parser:
+        parser = argparse.ArgumentParser()
     parser.add_argument("--cls", type=str, choices=["Pet", "Polly"], default="Pet")
     parser.add_argument("--benchmark", type=str, default="stencils/jacobi-1d")
     parser.add_argument("--base", type=str, default="examples/polybench")
     parser.add_argument("--dataset", type=str, default="LARGE")
     parser.add_argument("--oflag", type=int, default=3)
+    return parser
 
-    parser.add_argument("--method", type=str, default="EvoTADASHI")
 
-    parser.add_argument("--max-depth", type=int, default=10)
-    parser.add_argument("--beam-width", type=int, default=10)
-    args, method_args = parser.parse_known_args()
+if __name__ == "__main__":
+    app_args, ml_args = get_appargs_parser().parse_known_args()
+    ml_args = get_mlargs_parser().parse_args(ml_args)
 
     translator = None
-    if args.cls == "Polly":
+    if app_args.cls == "Polly":
         translator = translators.Polly()
     else:
         translator = translators.Pet()
 
     app = Polybench(
-        args.benchmark,
-        compiler_options=[f"-D{args.dataset}_DATASET", f"-O{args.oflag}"],
+        app_args.benchmark,
+        compiler_options=[f"-D{app_args.dataset}_DATASET", f"-O{app_args.oflag}"],
         translator=translator,
     )
 
-    if args.method == "EvoTADASHI":
-        from EvoTADASHI import EvoTADASHI, get_parser
+    method = EvoTADASHI(app, **vars(ml_args))
 
-        args = get_parser().parse_args(method_args)
-        method = EvoTADASHI(
-            app,
-            args.init_seed,
-            args.population_size,
-            args.tournament_size,
-            args.max_gen,
-            args.n_trials,
-            args.use_mpi,
-            args.use_heuristic,
-        )
-    elif args.method == "BeamSearch":
-        from BeamSearch import BeamSearch
-
-        method = BeamSearch(args)
-    elif args.method == "Heuristic":
-        from Heuristic import Heuristic
-
-        method = Heuristic(args)
-    else:
-        print("Method not implemented %s" % args.method)
-        assert False
-
-    print(str(args) + "\n")
+    print(f"{ml_args=}")
+    print(f"{app_args=}")
     method.fit()

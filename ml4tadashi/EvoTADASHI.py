@@ -7,13 +7,14 @@ import timeit
 from pathlib import Path
 from random import choice, randint, randrange, seed
 from subprocess import CalledProcessError, TimeoutExpired
+from typing import Optional
 
 # import multiprocess as mp
 from tadashi import TrEnum
 from tadashi.apps import App
 from tadashi.translators import Polly
 
-from util import *
+from .util import *
 
 
 class Individual:
@@ -259,12 +260,13 @@ class EvoTADASHI:
         return self.best_individual
 
 
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--init_seed", type=int, default=47)
-    parser.add_argument("--population-size", type=int, default=50)
+def get_mlargs_parser(parser: Optional[argparse.ArgumentParser] = None):
+    if not parser:
+        parser = argparse.ArgumentParser()
+    parser.add_argument("--init_seed", type=int, default=42)
+    parser.add_argument("--population-size", type=int, default=3)
     parser.add_argument("--tournament-size", type=int, default=2)
-    parser.add_argument("--max-gen", type=int, default=10)
+    parser.add_argument("--max-gen", type=int, default=3)
     parser.add_argument("--n-trials", type=int, default=2)
     parser.add_argument(
         "--use-mpi", action=argparse.BooleanOptionalAction, default=False
@@ -272,4 +274,4 @@ def get_args():
     parser.add_argument(
         "--use-heuristic", action=argparse.BooleanOptionalAction, default=False
     )
-    return parser.parse_args()
+    return parser
