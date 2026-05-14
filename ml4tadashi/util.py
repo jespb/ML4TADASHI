@@ -167,17 +167,3 @@ def multiProcess_evaluation(a):
         return "E"
 
     return evaluate(app, n_trials, timeout)
-
-
-def remote_measure(app, trs):
-    """
-    For distributed evaluations using mpi4py
-    """
-    print(f"{trs=}")
-    hostname = socket.gethostname()
-    print(f"{hostname=}")
-    app.transform_list(trs)
-    tapp = app.generate_code(alt_infix=f"_evot_{hostname}", ephemeral=False)
-    tapp.compile()
-    rv = tapp.measure()
-    return rv, hostname
