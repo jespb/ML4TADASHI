@@ -147,9 +147,9 @@ class EvoTADASHI:
     ):
         self.seed = init_seed
         seed(init_seed)
-        self.app_factory = app
-        self.app_factory.compile()
-        self.timeout = timeit.timeit(self.app_factory.measure, number=1) * 2
+        self.app = app
+        self.app.compile()
+        self.timeout = timeit.timeit(self.app.measure, number=1) * 2
         self.population_size = population_size
         self.max_gen = max_gen
         self.n_trials = n_trials
@@ -180,12 +180,12 @@ class EvoTADASHI:
 
         self.best_individual = self.population[0]
         self.best_individual.get_fitness(
-            self.app_factory, self.n_trials, evaluations=self.evaluations
+            self.app, self.n_trials, evaluations=self.evaluations
         )
         print(
             "Measure without transformations:",
             self.best_individual.get_fitness(
-                self.app_factory, self.n_trials, evaluations=self.evaluations
+                self.app, self.n_trials, evaluations=self.evaluations
             ),
         )
 
@@ -197,7 +197,7 @@ class EvoTADASHI:
                 results = list(
                     self.executor.map(
                         util.remote_measure,
-                        [self.app_factory] * len(self.population),
+                        [self.app] * len(self.population),
                         [ind.operation_list for ind in self.population],
                     )
                 )
@@ -209,7 +209,7 @@ class EvoTADASHI:
             else:
                 fitnesses = [
                     i.get_fitness(
-                        self.app_factory,
+                        self.app,
                         self.n_trials,
                         timeout=self.timeout,
                         evaluations=self.evaluations,
@@ -236,8 +236,8 @@ class EvoTADASHI:
             while len(new_pop) < self.population_size:
                 ind1 = self.tournament()
                 ind2 = self.tournament()
-                ind1 = ind1.mutate(self.app_factory)
-                ind2 = ind2.mutate(self.app_factory)
+                ind1 = ind1.mutate(self.app)
+                ind2 = ind2.mutate(self.app)
                 if False:
                     pass
                     # TODO: Implement crossover
