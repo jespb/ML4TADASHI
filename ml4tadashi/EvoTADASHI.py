@@ -194,17 +194,13 @@ class EvoTADASHI:
 
             start_time = time.time()
             if self.use_mpi:
-                results = list(
-                    self.executor.map(
-                        util.remote_measure,
-                        [self.app] * len(self.population),
-                        [ind.operation_list for ind in self.population],
-                    )
-                )
-                for i in range(len(results)):
-                    fitn = results[i][0] * -1
+                trs_list = [ind.operation_list for ind in self.population]
+                results = self.app.transform_measure_mpi(trs_list, self.executor)
+
+                for i, result in enumerate(results):
+                    fitn = result[0] * -1
                     self.population[i].fitness = fitn  # so bigger fitness is better
-                    # print("      Individual %d was evaluated on hostname"%i, results[i][1])
+                    print(f">>> Individual was evaluated on hostname {result[1]}")
                     self.evaluations[str(self.population[i].operation_list)] = fitn
             else:
                 fitnesses = [
