@@ -54,7 +54,7 @@ def isTransformationListLegal(app, tr_list):
         return app.legal
     except Exception as e:
         logger.error("Failed to verify legality:")
-        logger.error(f"{tr=}")
+        logger.error(f"{tr_list=}")
         logger.error(e)
         return False
 
