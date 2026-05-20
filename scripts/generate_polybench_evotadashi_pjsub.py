@@ -3,6 +3,7 @@
 import argparse
 import os
 import shlex
+from datetime import datetime
 from pathlib import Path
 
 from tadashi.apps import Polybench
@@ -37,7 +38,7 @@ JOB_TEMPLATE = r"""#!/bin/bash
 #PJM -L node={nodes}
 #PJM --mpi "max-proc-per-node=1"
 # #PJM --llio localtmp-size=40Gi
-#PJM -j -S
+#PJM -S
 
 set -e
 
@@ -48,8 +49,11 @@ export LD_PRELOAD=/usr/lib/FJSVtcs/ple/lib64/libpmix.so
 
 PYTHON_BIN={python_bin}
 ENTRYPOINT={entrypoint}
-RESULT_DIR={result_dir}
-RESULT_FILE=$RESULT_DIR/run{run_index}.txt
+RESULT_ROOT={result_root}
+JOB_ID=${{PJM_JOBID:-unknown_job}}
+RESULT_DIR=$RESULT_ROOT/job_$JOB_ID
+RUN_STDOUT=$RESULT_DIR/run{run_index}.out
+RUN_STDERR=$RESULT_DIR/run{run_index}.err
 
 {mpi_args}
 
@@ -58,17 +62,22 @@ RESULT_FILE=$RESULT_DIR/run{run_index}.txt
 {ml_args}
 
 mkdir -p "$RESULT_DIR"
-{{
-  "${{MPI_ARGS[@]}}" "$PYTHON_BIN" -u "$ENTRYPOINT" \
-    "${{APP_ARGS[@]}}" \
-    "${{ML_ARGS[@]}}"
-}} > "$RESULT_FILE" 2>&1
+"${{MPI_ARGS[@]}}" "$PYTHON_BIN" -u "$ENTRYPOINT" \
+  "${{APP_ARGS[@]}}" \
+  "${{ML_ARGS[@]}}"
 """
 
 
 BASH_ARRAY_TEMPLATE = r"""{name}=(
 {values}
 )"""
+
+
+RUN_ALL_TEMPLATE = r"""#!/bin/bash
+set -e
+
+{submissions}
+"""
 
 
 def get_parser():
@@ -173,9 +182,53 @@ def bash_array(name, values):
     )
 
 
-def build_job(args, config, benchmark, run_index):
+def build_mpi_args():
+    return BASH_ARRAY_TEMPLATE.format(
+        name="MPI_ARGS",
+        values="\n".join(
+            [
+                "  mpirun",
+                "  -n",
+                "  1",
+                "  -stdout",
+                '  "$RUN_STDOUT"',
+                "  -stderr",
+                '  "$RUN_STDERR"',
+            ]
+        ),
+    )
+
+
+def result_root(args, timestamp, config, benchmark, run_index):
+    return (
+        args.results_dir
+        / timestamp
+        / args.dataset
+        / config["name"]
+        / benchmark
+        / "run{run_index}".format(run_index=run_index)
+    ).resolve()
+
+
+def build_submission(path, result_root_path):
+    pjsub_stdout = result_root_path / "pjsub.out"
+    pjsub_stderr = result_root_path / "pjsub.err"
+    return "\n".join(
+        [
+            "mkdir -p {result_root}".format(
+                result_root=shlex.quote(str(result_root_path))
+            ),
+            "pjsub \\",
+            "  -o {stdout} \\".format(stdout=shlex.quote(str(pjsub_stdout))),
+            "  -e {stderr} \\".format(stderr=shlex.quote(str(pjsub_stderr))),
+            "  {path}".format(path=shlex.quote(str(path.resolve()))),
+        ]
+    )
+
+
+def build_job(args, timestamp, config, benchmark, run_index):
     seed = args.seed + run_index
-    result_dir = args.results_dir / args.dataset / config["name"] / benchmark
+    result_root_path = result_root(args, timestamp, config, benchmark, run_index)
     job_name = "EvoT_{config}_{benchmark}_r{run_index}".format(
         config=config["name"],
         benchmark=benchmark,
@@ -191,9 +244,9 @@ def build_job(args, config, benchmark, run_index):
         env="\n".join(config["env"]),
         python_bin="python",
         entrypoint=shlex.quote(str(REPO_ROOT / "examples/polybench_evotadashi.py")),
-        result_dir=shlex.quote(str(result_dir)),
+        result_root=shlex.quote(str(result_root_path)),
         run_index=run_index,
-        mpi_args=bash_array("MPI_ARGS", ["mpirun", "-n", "1"]),
+        mpi_args=build_mpi_args(),
         app_args=bash_array(
             "APP_ARGS",
             [
@@ -220,6 +273,7 @@ def build_job(args, config, benchmark, run_index):
 def main():
     args = get_parser().parse_args()
     benchmarks = get_benchmarks(args.benchmarks)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_all = []
 
     for config in CONFIGS:
@@ -230,24 +284,30 @@ def main():
                     run_index=run_index,
                 )
                 path = args.output_dir / config["name"] / filename
-                run_all.append("pjsub {path}".format(path=path))
+                result_root_path = result_root(
+                    args, timestamp, config, benchmark, run_index
+                )
+                run_all.append(build_submission(path, result_root_path))
 
                 if args.dry_run:
                     continue
 
                 path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(build_job(args, config, benchmark, run_index))
+                path.write_text(build_job(args, timestamp, config, benchmark, run_index))
 
     run_all_path = args.output_dir / "run_all.sh"
     if not args.dry_run:
         args.output_dir.mkdir(parents=True, exist_ok=True)
-        run_all_path.write_text("\n".join(run_all) + "\n")
+        run_all_path.write_text(
+            RUN_ALL_TEMPLATE.format(submissions="\n\n".join(run_all))
+        )
         os.chmod(run_all_path, 0o755)
 
     print("configs:", ", ".join(config["name"] for config in CONFIGS))
     print("benchmarks:", len(benchmarks))
     print("runs per config/benchmark:", args.runs)
     print("jobs:", len(run_all))
+    print("timestamp:", timestamp)
     print("run all:", run_all_path)
 
 
