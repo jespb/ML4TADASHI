@@ -92,12 +92,6 @@ def get_parser():
         help="Polybench dataset size passed to the runner.",
     )
     parser.add_argument(
-        "--oflag",
-        type=int,
-        default=3,
-        help="Compiler optimization level passed as -O<level>.",
-    )
-    parser.add_argument(
         "--population-size",
         type=int,
         default=300,
@@ -128,22 +122,10 @@ def get_parser():
         help="Initial seed; run N uses seed + N.",
     )
     parser.add_argument(
-        "--threads",
-        type=int,
-        default=2,
-        help="Reserved for thread-count configuration.",
-    )
-    parser.add_argument(
         "--elapse",
         type=str,
         default="21:00:00",
         help="PJSub wall-time limit for each generated job.",
-    )
-    parser.add_argument(
-        "--resource-group",
-        type=str,
-        default="small",
-        help="PJSub resource group.",
     )
     parser.add_argument(
         "--pjm-group",
@@ -152,16 +134,10 @@ def get_parser():
         help="PJSub project/group name.",
     )
     parser.add_argument(
-        "--python",
-        type=str,
-        default="python",
-        help="Python executable used in generated jobs.",
-    )
-    parser.add_argument(
-        "--mpirun",
-        type=str,
-        default="mpirun",
-        help="MPI launcher used in generated jobs.",
+        "--nodes",
+        type=int,
+        default=None,
+        help="Allocated PJSub nodes. Defaults to population size + 1.",
     )
     parser.add_argument(
         "--dry-run",
@@ -207,21 +183,20 @@ def build_job(args, config, benchmark, run_index):
     return JOB_TEMPLATE.format(
         pjm_group=args.pjm_group,
         job_name=job_name[:63],
-        resource_group=args.resource_group,
+        resource_group="small",
         elapse=args.elapse,
-        nodes=args.population_size + 1,
+        nodes=args.nodes or args.population_size + 1,
         env="\n".join(config["env"]),
-        python_bin=shlex.quote(args.python),
+        python_bin="python",
         result_dir=shlex.quote(str(result_dir)),
         run_index=run_index,
-        mpi_args=bash_array("MPI_ARGS", [args.mpirun, "-n", "1"]),
+        mpi_args=bash_array("MPI_ARGS", ["mpirun", "-n", "1"]),
         app_args=bash_array(
             "APP_ARGS",
             [
                 "--cls={cls}".format(cls=config["cls"]),
                 "--benchmark={benchmark}".format(benchmark=benchmark),
                 "--dataset={dataset}".format(dataset=args.dataset),
-                "--oflag={oflag}".format(oflag=args.oflag),
             ],
         ),
         ml_args=bash_array(

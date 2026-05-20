@@ -75,7 +75,7 @@ parameters.
 Polybench EvoTADASHI experiment matrix.
 
 ```sh
-python scripts/generate_polybench_evotadashi_pjsub.py cholesky gemm
+python scripts/generate_polybench_evotadashi_pjsub.py --nodes 301 cholesky gemm
 ```
 
 It writes job scripts under `jobs/polybench_evotadashi/` and a submit-all script:
