@@ -70,28 +70,109 @@ BASH_ARRAY_TEMPLATE = r"""{name}=(
 
 
 def get_parser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--output-dir", type=Path, default=Path("jobs/polybench_evotadashi")
+    parser = argparse.ArgumentParser(
+        description="Generate Fugaku PJSub scripts for Polybench EvoTADASHI runs."
     )
     parser.add_argument(
-        "--results-dir", type=Path, default=Path("results/polybench_evotadashi")
+        "--output-dir",
+        type=Path,
+        default=Path("jobs/polybench_evotadashi"),
+        help="Directory where generated PJSub scripts are written.",
     )
-    parser.add_argument("--dataset", type=str, default="EXTRALARGE")
-    parser.add_argument("--oflag", type=int, default=3)
-    parser.add_argument("--population-size", type=int, default=300)
-    parser.add_argument("--max-gen", type=int, default=20)
-    parser.add_argument("--n-trials", type=int, default=2)
-    parser.add_argument("--runs", type=int, default=3)
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--threads", type=int, default=2)
-    parser.add_argument("--elapse", type=str, default="21:00:00")
-    parser.add_argument("--resource-group", type=str, default="small")
-    parser.add_argument("--pjm-group", type=str, default="ra000012")
-    parser.add_argument("--python", type=str, default="python")
-    parser.add_argument("--mpirun", type=str, default="mpirun")
-    parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("benchmarks", nargs="*")
+    parser.add_argument(
+        "--results-dir",
+        type=Path,
+        default=Path("results/polybench_evotadashi"),
+        help="Base directory used by generated jobs for run output.",
+    )
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="EXTRALARGE",
+        help="Polybench dataset size passed to the runner.",
+    )
+    parser.add_argument(
+        "--oflag",
+        type=int,
+        default=3,
+        help="Compiler optimization level passed as -O<level>.",
+    )
+    parser.add_argument(
+        "--population-size",
+        type=int,
+        default=300,
+        help="EvoTADASHI population size.",
+    )
+    parser.add_argument(
+        "--max-gen",
+        type=int,
+        default=20,
+        help="Maximum number of EvoTADASHI generations.",
+    )
+    parser.add_argument(
+        "--n-trials",
+        type=int,
+        default=2,
+        help="Number of evaluation trials per individual.",
+    )
+    parser.add_argument(
+        "--runs",
+        type=int,
+        default=3,
+        help="Independent seeded runs generated for each config and benchmark.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=42,
+        help="Initial seed; run N uses seed + N.",
+    )
+    parser.add_argument(
+        "--threads",
+        type=int,
+        default=2,
+        help="Reserved for thread-count configuration.",
+    )
+    parser.add_argument(
+        "--elapse",
+        type=str,
+        default="21:00:00",
+        help="PJSub wall-time limit for each generated job.",
+    )
+    parser.add_argument(
+        "--resource-group",
+        type=str,
+        default="small",
+        help="PJSub resource group.",
+    )
+    parser.add_argument(
+        "--pjm-group",
+        type=str,
+        default="ra000012",
+        help="PJSub project/group name.",
+    )
+    parser.add_argument(
+        "--python",
+        type=str,
+        default="python",
+        help="Python executable used in generated jobs.",
+    )
+    parser.add_argument(
+        "--mpirun",
+        type=str,
+        default="mpirun",
+        help="MPI launcher used in generated jobs.",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print the planned job count without writing files.",
+    )
+    parser.add_argument(
+        "benchmarks",
+        nargs="*",
+        help="Optional Polybench benchmarks; filenames like cholesky are enough.",
+    )
     return parser
 
 
