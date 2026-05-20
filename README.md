@@ -42,6 +42,58 @@ python main.py [args]
 
 for other arguments, check the main.py file
 
+## Polybench EvoTADASHI examples
+
+`examples/polybench_evotadashi.py` runs EvoTADASHI on a concrete Polybench app.
+Use `--cls Pet` or `--cls Polly` to choose the translator. Polybench benchmarks
+can be specified by filename only; for example, use `cholesky` instead of
+`linear-algebra/solvers/cholesky`.
+
+Minimal example:
+
+```sh
+python -u examples/polybench_evotadashi.py \
+  --cls Pet \
+  --benchmark cholesky \
+  --dataset EXTRALARGE \
+  --population-size 300
+```
+
+For Polly, load the desired LLVM environment first:
+
+```sh
+module load LLVM/llvmorg-21.1.0
+python -u examples/polybench_evotadashi.py --cls Polly --benchmark cholesky
+```
+
+Use `python -u examples/polybench_evotadashi.py --help` for the complete list of
+parameters.
+
+## Fugaku PJSub generation
+
+`scripts/generate_polybench_evotadashi_pjsub.py` generates PJSub scripts for a
+Polybench EvoTADASHI experiment matrix.
+
+```sh
+python scripts/generate_polybench_evotadashi_pjsub.py cholesky gemm
+```
+
+It writes job scripts under `jobs/polybench_evotadashi/` and a submit-all script:
+
+```sh
+jobs/polybench_evotadashi/run_all.sh
+```
+
+Run the generator without benchmark arguments to include all Polybench benchmarks.
+Use `python scripts/generate_polybench_evotadashi_pjsub.py --help` for the
+complete list of parameters.
+
+Submit the generated jobs with:
+
+```sh
+jobs/polybench_evotadashi/run_all.sh
+```
+
 ---
 
 ### References:
