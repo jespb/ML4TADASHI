@@ -7,6 +7,8 @@ from pathlib import Path
 
 from tadashi.apps import Polybench
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+
 CONFIGS = [
     {
         "name": "pet",
@@ -45,7 +47,7 @@ export LD_PRELOAD=/usr/lib/FJSVtcs/ple/lib64/libpmix.so
 {env}
 
 PYTHON_BIN={python_bin}
-ENTRYPOINT=examples/polybench_evotadashi.py
+ENTRYPOINT={entrypoint}
 RESULT_DIR={result_dir}
 RESULT_FILE=$RESULT_DIR/run{run_index}.txt
 
@@ -188,6 +190,7 @@ def build_job(args, config, benchmark, run_index):
         nodes=args.nodes or args.population_size + 1,
         env="\n".join(config["env"]),
         python_bin="python",
+        entrypoint=shlex.quote(str(REPO_ROOT / "examples/polybench_evotadashi.py")),
         result_dir=shlex.quote(str(result_dir)),
         run_index=run_index,
         mpi_args=bash_array("MPI_ARGS", ["mpirun", "-n", "1"]),
