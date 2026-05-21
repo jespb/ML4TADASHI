@@ -55,28 +55,24 @@ RESULT_DIR=$RESULT_ROOT/job_$JOB_ID
 RUN_STDOUT=$RESULT_DIR/run{run_index}.out
 RUN_STDERR=$RESULT_DIR/run{run_index}.err
 
-{mpi_args}
+MPI_ARGS=(
+  mpirun -n 1
+  -stdout "$RUN_STDOUT"
+  -stderr "$RUN_STDERR"
+)
 
-{app_args}
+APP_ARGS=(
+{app_arg_values}
+)
 
-{ml_args}
+ML_ARGS=(
+{ml_arg_values}
+)
 
 mkdir -p "$RESULT_DIR"
 "${{MPI_ARGS[@]}}" "$PYTHON_BIN" -u "$ENTRYPOINT" \
   "${{APP_ARGS[@]}}" \
   "${{ML_ARGS[@]}}"
-"""
-
-
-BASH_ARRAY_TEMPLATE = r"""{name}=(
-{values}
-)"""
-
-
-RUN_ALL_TEMPLATE = r"""#!/bin/bash
-set -e
-
-{submissions}
 """
 
 
@@ -173,30 +169,8 @@ def get_benchmarks(selected):
     return [benchmark_name(benchmark) for benchmark in Polybench.get_benchmarks()]
 
 
-def bash_array(name, values):
-    return BASH_ARRAY_TEMPLATE.format(
-        name=name,
-        values="\n".join(
-            "  {value}".format(value=shlex.quote(value)) for value in values
-        ),
-    )
-
-
-def build_mpi_args():
-    return BASH_ARRAY_TEMPLATE.format(
-        name="MPI_ARGS",
-        values="\n".join(
-            [
-                "  mpirun",
-                "  -n",
-                "  1",
-                "  -stdout",
-                '  "$RUN_STDOUT"',
-                "  -stderr",
-                '  "$RUN_STDERR"',
-            ]
-        ),
-    )
+def bash_array_values(values):
+    return "\n".join(f"  {shlex.quote(value)}" for value in values)
 
 
 def result_root(args, timestamp, config, benchmark, run_index):
@@ -206,7 +180,7 @@ def result_root(args, timestamp, config, benchmark, run_index):
         / args.dataset
         / config["name"]
         / benchmark
-        / "run{run_index}".format(run_index=run_index)
+        / f"run{run_index}"
     ).resolve()
 
 
@@ -215,13 +189,11 @@ def build_submission(path, result_root_path):
     pjsub_stderr = result_root_path / "pjsub.err"
     return "\n".join(
         [
-            "mkdir -p {result_root}".format(
-                result_root=shlex.quote(str(result_root_path))
-            ),
+            f"mkdir -p {shlex.quote(str(result_root_path))}",
             "pjsub \\",
-            "  -o {stdout} \\".format(stdout=shlex.quote(str(pjsub_stdout))),
-            "  -e {stderr} \\".format(stderr=shlex.quote(str(pjsub_stderr))),
-            "  {path}".format(path=shlex.quote(str(path.resolve()))),
+            f"  -o {shlex.quote(str(pjsub_stdout))} \\",
+            f"  -e {shlex.quote(str(pjsub_stderr))} \\",
+            f"  {shlex.quote(str(path.resolve()))}",
         ]
     )
 
@@ -229,12 +201,20 @@ def build_submission(path, result_root_path):
 def build_job(args, timestamp, config, benchmark, run_index):
     seed = args.seed + run_index
     result_root_path = result_root(args, timestamp, config, benchmark, run_index)
-    job_name = "EvoT_{config}_{benchmark}_r{run_index}".format(
-        config=config["name"],
-        benchmark=benchmark,
-        run_index=run_index,
-    )
+    job_name = f"EvoT_{config['name']}_{benchmark}_r{run_index}"
 
+    app_arg_values = [
+        f"--cls={config['cls']}",
+        f"--benchmark={benchmark}",
+        f"--dataset={args.dataset}",
+    ]
+    ml_arg_values = [
+        f"--population-size={args.population_size}",
+        f"--max-gen={args.max_gen}",
+        f"--n-trials={args.n_trials}",
+        f"--init_seed={seed}",
+        "--use-mpi",
+    ]
     return JOB_TEMPLATE.format(
         pjm_group=args.pjm_group,
         job_name=job_name[:63],
@@ -246,27 +226,8 @@ def build_job(args, timestamp, config, benchmark, run_index):
         entrypoint=shlex.quote(str(REPO_ROOT / "examples/polybench_evotadashi.py")),
         result_root=shlex.quote(str(result_root_path)),
         run_index=run_index,
-        mpi_args=build_mpi_args(),
-        app_args=bash_array(
-            "APP_ARGS",
-            [
-                "--cls={cls}".format(cls=config["cls"]),
-                "--benchmark={benchmark}".format(benchmark=benchmark),
-                "--dataset={dataset}".format(dataset=args.dataset),
-            ],
-        ),
-        ml_args=bash_array(
-            "ML_ARGS",
-            [
-                "--population-size={population_size}".format(
-                    population_size=args.population_size
-                ),
-                "--max-gen={max_gen}".format(max_gen=args.max_gen),
-                "--n-trials={n_trials}".format(n_trials=args.n_trials),
-                "--init_seed={seed}".format(seed=seed),
-                "--use-mpi",
-            ],
-        ),
+        app_arg_values=bash_array_values(app_arg_values),
+        ml_arg_values=bash_array_values(ml_arg_values),
     )
 
 
@@ -279,10 +240,7 @@ def main():
     for config in CONFIGS:
         for benchmark in benchmarks:
             for run_index in range(args.runs):
-                filename = "{benchmark}_run{run_index}.sh".format(
-                    benchmark=benchmark,
-                    run_index=run_index,
-                )
+                filename = f"{benchmark}_run{run_index}.sh"
                 path = args.output_dir / config["name"] / filename
                 result_root_path = result_root(
                     args, timestamp, config, benchmark, run_index
@@ -293,14 +251,15 @@ def main():
                     continue
 
                 path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(build_job(args, timestamp, config, benchmark, run_index))
+                path.write_text(
+                    build_job(args, timestamp, config, benchmark, run_index)
+                )
 
     run_all_path = args.output_dir / "run_all.sh"
     if not args.dry_run:
         args.output_dir.mkdir(parents=True, exist_ok=True)
-        run_all_path.write_text(
-            RUN_ALL_TEMPLATE.format(submissions="\n\n".join(run_all))
-        )
+        submissions = "\n\n".join(run_all)
+        run_all_path.write_text(f"#!/bin/bash\nset -e\n\n{submissions}\n")
         os.chmod(run_all_path, 0o755)
 
     print("configs:", ", ".join(config["name"] for config in CONFIGS))
