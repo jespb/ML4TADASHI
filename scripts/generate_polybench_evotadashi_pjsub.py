@@ -159,14 +159,9 @@ def get_parser():
     return parser
 
 
-def benchmark_name(benchmark):
-    return Path(str(benchmark)).name
-
-
 def get_benchmarks(selected):
-    if selected:
-        return [benchmark_name(benchmark) for benchmark in selected]
-    return [benchmark_name(benchmark) for benchmark in Polybench.get_benchmarks()]
+    benchmarks = selected if selected else Polybench.get_benchmarks()
+    return [Path(str(b)).name for b in benchmarks]
 
 
 def bash_array_values(values):
