@@ -242,18 +242,13 @@ def main():
             for run_index in range(args.runs):
                 filename = f"{benchmark}_run{run_index}.sh"
                 path = args.output_dir / config["name"] / filename
-                result_root_path = result_root(
-                    args, timestamp, config, benchmark, run_index
-                )
-                run_all.append(build_submission(path, result_root_path))
-
+                root = result_root(args, timestamp, config, benchmark, run_index)
+                run_all.append(build_submission(path, root))
                 if args.dry_run:
                     continue
-
                 path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(
-                    build_job(args, timestamp, config, benchmark, run_index)
-                )
+                body = build_job(args, timestamp, config, benchmark, run_index)
+                path.write_text(body)
 
     run_all_path = args.output_dir / "run_all.sh"
     if not args.dry_run:
