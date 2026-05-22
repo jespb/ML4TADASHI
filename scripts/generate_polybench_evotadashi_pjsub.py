@@ -147,21 +147,11 @@ def get_parser():
         help="Allocated PJSub nodes. Defaults to population size + 1.",
     )
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Print the planned job count without writing files.",
-    )
-    parser.add_argument(
         "benchmarks",
         nargs="*",
         help="Optional Polybench benchmarks; filenames like cholesky are enough.",
     )
     return parser
-
-
-def get_benchmarks(selected):
-    benchmarks = selected if selected else Polybench.get_benchmarks()
-    return [Path(str(b)).name for b in benchmarks]
 
 
 def bash_array_values(values):
@@ -228,7 +218,8 @@ def build_job(args, timestamp, config, benchmark, run_index):
 
 def main():
     args = get_parser().parse_args()
-    benchmarks = get_benchmarks(args.benchmarks)
+    benchmarks = args.benchmarks if args.benchmarks else Polybench.get_benchmarks()
+    benchmarks = [Path(str(benchmark)).name for benchmark in benchmarks]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_all = []
 
@@ -239,18 +230,15 @@ def main():
                 path = args.output_dir / config["name"] / filename
                 root = result_root(args, timestamp, config, benchmark, run_index)
                 run_all.append(build_submission(path, root))
-                if args.dry_run:
-                    continue
                 path.parent.mkdir(parents=True, exist_ok=True)
                 body = build_job(args, timestamp, config, benchmark, run_index)
                 path.write_text(body)
 
     run_all_path = args.output_dir / "run_all.sh"
-    if not args.dry_run:
-        args.output_dir.mkdir(parents=True, exist_ok=True)
-        submissions = "\n\n".join(run_all)
-        run_all_path.write_text(f"#!/bin/bash\nset -e\n\n{submissions}\n")
-        os.chmod(run_all_path, 0o755)
+    args.output_dir.mkdir(parents=True, exist_ok=True)
+    submissions = "\n\n".join(run_all)
+    run_all_path.write_text(f"#!/bin/bash\nset -e\n\n{submissions}\n")
+    os.chmod(run_all_path, 0o755)
 
     print("configs:", ", ".join(config["name"] for config in CONFIGS))
     print("benchmarks:", len(benchmarks))
