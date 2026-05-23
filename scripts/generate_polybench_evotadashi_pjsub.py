@@ -150,8 +150,8 @@ def result_root(results_dir, dataset, timestamp, config, benchmark, run_index):
 
 
 def build_submission(path, result_root_path):
-    pjsub_stdout = result_root_path / "pjsub.out"
-    pjsub_stderr = result_root_path / "pjsub.err"
+    pjsub_stdout = result_root_path / "pjsub.%j.out"
+    pjsub_stderr = result_root_path / "pjsub.%j.err"
     return "\n".join(
         [
             f"mkdir -p {quote(str(result_root_path))}",
