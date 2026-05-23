@@ -12,7 +12,9 @@ def get_appargs_parser(
 ) -> argparse.ArgumentParser:
     if not parser:
         parser = argparse.ArgumentParser()
-    parser.add_argument("--cls", type=str, choices=["Pet", "Polly"], default="Pet")
+    parser.add_argument(
+        "--translator", type=str, choices=["Pet", "Polly"], default="Pet"
+    )
     parser.add_argument("--benchmark", type=str, default="stencils/jacobi-1d")
     parser.add_argument("--base", type=str, default="examples/polybench")
     parser.add_argument("--dataset", type=str, default="LARGE")
@@ -25,7 +27,7 @@ if __name__ == "__main__":
     ml_args = get_mlargs_parser().parse_args(ml_args)
 
     translator = None
-    if app_args.cls == "Polly":
+    if app_args.translator == "Polly":
         translator = translators.Polly()
     else:
         translator = translators.Pet()

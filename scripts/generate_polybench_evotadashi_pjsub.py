@@ -2,9 +2,9 @@
 
 import argparse
 import os
-import shlex
 from datetime import datetime
 from pathlib import Path
+from shlex import quote
 
 from tadashi.apps import Polybench
 
@@ -13,17 +13,17 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIGS = [
     {
         "name": "pet",
-        "cls": "Pet",
+        "translator": "Pet",
         "env": [],
     },
     {
         "name": "polly-llvm19",
-        "cls": "Polly",
+        "translator": "Polly",
         "env": ["source /home/apps/oss/llvm-v19.1.4/init.sh"],
     },
     {
         "name": "polly-llvm21",
-        "cls": "Polly",
+        "translator": "Polly",
         "env": ["module load LLVM/llvmorg-21.1.0"],
     },
 ]
@@ -47,32 +47,21 @@ export LD_PRELOAD=/usr/lib/FJSVtcs/ple/lib64/libpmix.so
 
 {env}
 
-PYTHON_BIN={python_bin}
 ENTRYPOINT={entrypoint}
-RESULT_ROOT={result_root}
-JOB_ID=${{PJM_JOBID:-unknown_job}}
-RESULT_DIR=$RESULT_ROOT/job_$JOB_ID
-RUN_STDOUT=$RESULT_DIR/run{run_index}.out
-RUN_STDERR=$RESULT_DIR/run{run_index}.err
+RESULT_DIR={result_root}/job_$PJM_JOBID
 
-MPI_ARGS=(
+MPIRUN=(
   mpirun -n 1
-  -stdout "$RUN_STDOUT"
-  -stderr "$RUN_STDERR"
+  -stdout-proc "$RESULT_DIR/run{run_index}.out"
+  -stderr-proc "$RESULT_DIR/run{run_index}.err"
 )
 
-APP_ARGS=(
-{app_arg_values}
-)
-
-ML_ARGS=(
-{ml_arg_values}
+FLAGS=(
+{flags}
 )
 
 mkdir -p "$RESULT_DIR"
-"${{MPI_ARGS[@]}}" "$PYTHON_BIN" -u "$ENTRYPOINT" \
-  "${{APP_ARGS[@]}}" \
-  "${{ML_ARGS[@]}}"
+"${{MPIRUN[@]}}" python -u "${{ENTRYPOINT}}" "${{FLAGS[@]}}"
 """
 
 
@@ -154,19 +143,10 @@ def get_parser():
     return parser
 
 
-def bash_array_values(values):
-    return "\n".join(f"  {shlex.quote(value)}" for value in values)
-
-
-def result_root(args, timestamp, config, benchmark, run_index):
-    return (
-        args.results_dir
-        / timestamp
-        / args.dataset
-        / config["name"]
-        / benchmark
-        / f"run{run_index}"
-    ).resolve()
+def result_root(results_dir, dataset, timestamp, config, benchmark, run_index):
+    subdir = f"{dataset}-{config['name']}-{benchmark}-run{run_index}"
+    path = results_dir / subdir / timestamp
+    return path.resolve()
 
 
 def build_submission(path, result_root_path):
@@ -174,26 +154,26 @@ def build_submission(path, result_root_path):
     pjsub_stderr = result_root_path / "pjsub.err"
     return "\n".join(
         [
-            f"mkdir -p {shlex.quote(str(result_root_path))}",
+            f"mkdir -p {quote(str(result_root_path))}",
             "pjsub \\",
-            f"  -o {shlex.quote(str(pjsub_stdout))} \\",
-            f"  -e {shlex.quote(str(pjsub_stderr))} \\",
-            f"  {shlex.quote(str(path.resolve()))}",
+            f"  -o {quote(str(pjsub_stdout))} \\",
+            f"  -e {quote(str(pjsub_stderr))} \\",
+            f"  {quote(str(path.resolve()))}",
         ]
     )
 
 
 def build_job(args, timestamp, config, benchmark, run_index):
     seed = args.seed + run_index
-    result_root_path = result_root(args, timestamp, config, benchmark, run_index)
+    result_root_path = result_root(
+        args.results_dir, args.dataset, timestamp, config, benchmark, run_index
+    )
     job_name = f"EvoT_{config['name']}_{benchmark}_r{run_index}"
 
-    app_arg_values = [
-        f"--cls={config['cls']}",
+    flags = [
+        f"--translator={config['translator']}",
         f"--benchmark={benchmark}",
         f"--dataset={args.dataset}",
-    ]
-    ml_arg_values = [
         f"--population-size={args.population_size}",
         f"--max-gen={args.max_gen}",
         f"--n-trials={args.n_trials}",
@@ -202,17 +182,15 @@ def build_job(args, timestamp, config, benchmark, run_index):
     ]
     return JOB_TEMPLATE.format(
         pjm_group=args.pjm_group,
-        job_name=job_name[:63],
+        job_name=job_name,
         resource_group="small",
         elapse=args.elapse,
         nodes=args.nodes or args.population_size + 1,
         env="\n".join(config["env"]),
-        python_bin="python",
-        entrypoint=shlex.quote(str(REPO_ROOT / "examples/polybench_evotadashi.py")),
-        result_root=shlex.quote(str(result_root_path)),
+        entrypoint=quote(str(REPO_ROOT / "examples/polybench_evotadashi.py")),
+        result_root=quote(str(result_root_path)),
         run_index=run_index,
-        app_arg_values=bash_array_values(app_arg_values),
-        ml_arg_values=bash_array_values(ml_arg_values),
+        flags="\n".join(f"  {quote(f)}" for f in flags),
     )
 
 
@@ -228,7 +206,14 @@ def main():
             for run_index in range(args.runs):
                 filename = f"{benchmark}_run{run_index}.sh"
                 path = args.output_dir / config["name"] / filename
-                root = result_root(args, timestamp, config, benchmark, run_index)
+                root = result_root(
+                    args.results_dir,
+                    args.dataset,
+                    timestamp,
+                    config,
+                    benchmark,
+                    run_index,
+                )
                 run_all.append(build_submission(path, root))
                 path.parent.mkdir(parents=True, exist_ok=True)
                 body = build_job(args, timestamp, config, benchmark, run_index)
