@@ -17,11 +17,12 @@ from . import util
 
 
 class Individual:
+    logger: logging.Logger
     operation_list: list = None
     fitness: float = None
-    logger: logging.Logger = logging.getLogger(__name__)
 
     def __init__(self, op: list = []):
+        self.logger = logging.getLogger(__name__)
         self.operation_list = op
 
     def __str__(self):
@@ -125,6 +126,7 @@ class Individual:
 
 
 class EvoTADASHI:
+    logger: logging.Logger
     population = None
     max_gen = None
     best_individual = None
@@ -145,6 +147,7 @@ class EvoTADASHI:
         use_mpi: bool = False,
         use_heuristic: bool = False,
     ):
+        self.logger = logging.getLogger(__name__)
         self.seed = init_seed
         seed(init_seed)
         self.app = app
@@ -200,7 +203,7 @@ class EvoTADASHI:
                 for i, result in enumerate(results):
                     fitn = result[0] * -1
                     self.population[i].fitness = fitn  # so bigger fitness is better
-                    print(f">>> Individual was evaluated on hostname {result[1]}")
+                    self.logger.debug(f"Evaluated on {result[1]}")
                     self.evaluations[str(self.population[i].operation_list)] = fitn
             else:
                 fitnesses = [
