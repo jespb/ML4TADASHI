@@ -8,8 +8,6 @@ from shlex import quote
 
 from tadashi.apps import Polybench
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-
 CONFIGS = [
     {
         "name": "pet",
@@ -29,7 +27,7 @@ CONFIGS = [
 ]
 
 
-JOB_TEMPLATE = r"""#!/bin/bash
+INNER_JOB_TEMPLATE = r"""#!/bin/bash
 #PJM -g {pjm_group}
 #PJM -x PJM_LLIO_GFSCACHE=/vol0004
 #PJM -N {job_name}
@@ -47,8 +45,7 @@ export LD_PRELOAD=/usr/lib/FJSVtcs/ple/lib64/libpmix.so
 
 {env}
 
-ENTRYPOINT={entrypoint}
-RESULT_DIR={result_root}/job_$PJM_JOBID
+RESULT_DIR=$RESULT_ROOT/job_$PJM_JOBID
 
 MPIRUN=(
   mpirun -n 1
@@ -62,6 +59,35 @@ FLAGS=(
 
 mkdir -p "$RESULT_DIR"
 "${{MPIRUN[@]}}" python -u "${{ENTRYPOINT}}" "${{FLAGS[@]}}"
+"""
+
+
+SUBMISSION_TEMPLATE = r"""#!/bin/bash
+set -e
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+REPO_DIR=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)
+RESULT_ROOT={result_root}
+ENTRYPOINT="$REPO_DIR/examples/polybench_evotadashi.py"
+
+mkdir -p "$RESULT_ROOT"
+
+pjsub \
+  -o "$RESULT_ROOT/pjsub.%j.out" \
+  -e "$RESULT_ROOT/pjsub.%j.err" \
+  -x RESULT_ROOT="$RESULT_ROOT" \
+  -x ENTRYPOINT="$ENTRYPOINT" <<'PJSUB_EOF'
+{inner_job}
+PJSUB_EOF
+"""
+
+
+RUN_ALL_TEMPLATE = """#!/bin/bash
+set -e
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+
+{submissions}
 """
 
 
@@ -137,33 +163,9 @@ def get_parser():
     return parser
 
 
-def result_root(results_dir, dataset, timestamp, config, benchmark):
-    subdir = f"{config['name']}"
-    path = results_dir / dataset / benchmark / timestamp / subdir
-    return path.resolve()
-
-
-def build_submission(path, result_root_path):
-    pjsub_stdout = result_root_path / "pjsub.%j.out"
-    pjsub_stderr = result_root_path / "pjsub.%j.err"
-    return "\n".join(
-        [
-            f"mkdir -p {quote(str(result_root_path))}",
-            "pjsub \\",
-            f"  -o {quote(str(pjsub_stdout))} \\",
-            f"  -e {quote(str(pjsub_stderr))} \\",
-            f"  {quote(str(path.resolve()))}",
-        ]
-    )
-
-
-def build_job(args, timestamp, config, benchmark):
+def build_submission_script(args, timestamp, config, benchmark, path):
     seed = args.seed
-    result_root_path = result_root(
-        args.results_dir, args.dataset, timestamp, config, benchmark
-    )
-    job_name = f"EvoT_{config['name']}_{benchmark}_s{seed}"
-
+    root = args.results_dir / args.dataset / benchmark / timestamp / config["name"]
     flags = [
         f"--translator={config['translator']}",
         f"--benchmark={benchmark}",
@@ -174,24 +176,27 @@ def build_job(args, timestamp, config, benchmark):
         f"--init_seed={seed}",
         "--use-mpi",
     ]
-    return JOB_TEMPLATE.format(
+    inner_job = INNER_JOB_TEMPLATE.format(
         pjm_group=args.pjm_group,
-        job_name=job_name,
+        job_name=f"EvoT_{config['name']}_{benchmark}_s{seed}",
         resource_group="small",
         elapse=args.elapse,
         nodes=args.nodes or args.population_size + 1,
         env="\n".join(config["env"]),
-        entrypoint=quote(str(REPO_ROOT / "examples/polybench_evotadashi.py")),
-        result_root=quote(str(result_root_path)),
         flags="\n".join(f"  {quote(f)}" for f in flags),
-        seed=args.seed,
-    )
+        seed=seed,
+    ).rstrip()
+    if root.is_absolute():
+        result_root = quote(str(root))
+    else:
+        result_root = '"$REPO_DIR"/' + quote(str(root))
+    return SUBMISSION_TEMPLATE.format(result_root=result_root, inner_job=inner_job)
 
 
 def main():
     args = get_parser().parse_args()
-    benchmarks = args.benchmarks if args.benchmarks else Polybench.get_benchmarks()
-    benchmarks = [Path(str(benchmark)).name for benchmark in benchmarks]
+    bms = args.benchmarks if args.benchmarks else Polybench.get_benchmarks()
+    benchmarks = [Path(str(b)).name for b in bms]
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_all = []
 
@@ -199,22 +204,17 @@ def main():
         for benchmark in benchmarks:
             filename = f"{benchmark}.sh"
             path = args.output_dir / config["name"] / filename
-            root = result_root(
-                args.results_dir,
-                args.dataset,
-                timestamp,
-                config,
-                benchmark,
-            )
-            run_all.append(build_submission(path, root))
+            relative_path = path.relative_to(args.output_dir)
+            run_all.append('"$SCRIPT_DIR"/' + quote(str(relative_path)))
             path.parent.mkdir(parents=True, exist_ok=True)
-            body = build_job(args, timestamp, config, benchmark)
+            body = build_submission_script(args, timestamp, config, benchmark, path)
             path.write_text(body)
+            os.chmod(path, 0o755)
 
     run_all_path = args.output_dir / "run_all.sh"
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    submissions = "\n\n".join(run_all)
-    run_all_path.write_text(f"#!/bin/bash\nset -e\n\n{submissions}\n")
+    submissions = "\n".join(run_all)
+    run_all_path.write_text(RUN_ALL_TEMPLATE.format(submissions=submissions))
     os.chmod(run_all_path, 0o755)
 
     print("configs:", ", ".join(config["name"] for config in CONFIGS))
