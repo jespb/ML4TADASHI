@@ -38,8 +38,8 @@ ENTRYPOINT="$REPO_DIR/examples/polybench_evotadashi.py"
 mkdir -p "$RESULT_ROOT"
 
 pjsub \
-  -o "$RESULT_ROOT/pjsub.%j.out" \
-  -e "$RESULT_ROOT/pjsub.%j.err" \
+  -o "$RESULT_ROOT/pjsub.%j/stdout" \
+  -e "$RESULT_ROOT/pjsub.%j/stderr" \
   -x RESULT_ROOT="$RESULT_ROOT" \
   -x ENTRYPOINT="$ENTRYPOINT" <<'PJSUB_EOF'
 #!/bin/bash
