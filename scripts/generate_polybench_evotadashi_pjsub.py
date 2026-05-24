@@ -27,7 +27,22 @@ CONFIGS = [
 ]
 
 
-INNER_JOB_TEMPLATE = r"""#!/bin/bash
+SUBMISSION_TEMPLATE = r"""#!/bin/bash
+set -e
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+REPO_DIR=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)
+RESULT_ROOT={result_root}
+ENTRYPOINT="$REPO_DIR/examples/polybench_evotadashi.py"
+
+mkdir -p "$RESULT_ROOT"
+
+pjsub \
+  -o "$RESULT_ROOT/pjsub.%j.out" \
+  -e "$RESULT_ROOT/pjsub.%j.err" \
+  -x RESULT_ROOT="$RESULT_ROOT" \
+  -x ENTRYPOINT="$ENTRYPOINT" <<'PJSUB_EOF'
+#!/bin/bash
 #PJM -g {pjm_group}
 #PJM -x PJM_LLIO_GFSCACHE=/vol0004
 #PJM -N {job_name}
@@ -59,35 +74,14 @@ FLAGS=(
 
 mkdir -p "$RESULT_DIR"
 "${{MPIRUN[@]}}" python -u "${{ENTRYPOINT}}" "${{FLAGS[@]}}"
-"""
-
-
-SUBMISSION_TEMPLATE = r"""#!/bin/bash
-set -e
-
-SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
-REPO_DIR=$(git -C "$SCRIPT_DIR" rev-parse --show-toplevel)
-RESULT_ROOT={result_root}
-ENTRYPOINT="$REPO_DIR/examples/polybench_evotadashi.py"
-
-mkdir -p "$RESULT_ROOT"
-
-pjsub \
-  -o "$RESULT_ROOT/pjsub.%j.out" \
-  -e "$RESULT_ROOT/pjsub.%j.err" \
-  -x RESULT_ROOT="$RESULT_ROOT" \
-  -x ENTRYPOINT="$ENTRYPOINT" <<'PJSUB_EOF'
-{inner_job}
 PJSUB_EOF
 """
-
-
 RUN_ALL_TEMPLATE = """#!/bin/bash
 set -e
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 
-{submissions}
+{submission}
 """
 
 
@@ -176,7 +170,12 @@ def build_submission_script(args, timestamp, config, benchmark, path):
         f"--init_seed={seed}",
         "--use-mpi",
     ]
-    inner_job = INNER_JOB_TEMPLATE.format(
+    if root.is_absolute():
+        result_root = quote(str(root))
+    else:
+        result_root = '"$REPO_DIR"/' + quote(str(root))
+    return SUBMISSION_TEMPLATE.format(
+        result_root=result_root,
         pjm_group=args.pjm_group,
         job_name=f"EvoT_{config['name']}_{benchmark}_s{seed}",
         resource_group="small",
@@ -185,12 +184,7 @@ def build_submission_script(args, timestamp, config, benchmark, path):
         env="\n".join(config["env"]),
         flags="\n".join(f"  {quote(f)}" for f in flags),
         seed=seed,
-    ).rstrip()
-    if root.is_absolute():
-        result_root = quote(str(root))
-    else:
-        result_root = '"$REPO_DIR"/' + quote(str(root))
-    return SUBMISSION_TEMPLATE.format(result_root=result_root, inner_job=inner_job)
+    )
 
 
 def main():
@@ -213,7 +207,7 @@ def main():
 
     run_all_path = args.output_dir / "run_all.sh"
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    run_all_path.write_text(RUN_ALL_TEMPLATE.format(submissions="\n".join(run_all)))
+    run_all_path.write_text(RUN_ALL_TEMPLATE.format(submission="\n".join(run_all)))
     os.chmod(run_all_path, 0o755)
 
     print("configs:", ", ".join(config["name"] for config in CONFIGS))
