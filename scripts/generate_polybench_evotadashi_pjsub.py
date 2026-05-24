@@ -38,8 +38,8 @@ ENTRYPOINT="$REPO_DIR/examples/polybench_evotadashi.py"
 mkdir -p "$RESULT_ROOT"
 
 pjsub \
-  -o "$RESULT_ROOT/pjsub.%j/stdout" \
-  -e "$RESULT_ROOT/pjsub.%j/stderr" \
+  -o "$RESULT_ROOT/pjsub.%j.stdout" \
+  -e "$RESULT_ROOT/pjsub.%j.stderr" \
   -x RESULT_ROOT="$RESULT_ROOT" \
   -x ENTRYPOINT="$ENTRYPOINT" <<'PJSUB_EOF'
 #!/bin/bash
@@ -60,22 +60,21 @@ export LD_PRELOAD=/usr/lib/FJSVtcs/ple/lib64/libpmix.so
 
 {env}
 
-RESULT_DIR=$RESULT_ROOT/pjsub.$PJM_JOBID
-
 MPIRUN=(
   mpirun -n 1
-  -stdout-proc "$RESULT_DIR/seed{seed}.out"
-  -stderr-proc "$RESULT_DIR/seed{seed}.err"
+  -stdout-proc "$RESULT_ROOT/pjsub.$PJM_JOBID.out"
+  -stderr-proc "$RESULT_ROOT/pjsub.$PJM_JOBID.err"
 )
 
 FLAGS=(
 {flags}
 )
 
-mkdir -p "$RESULT_DIR"
+mkdir -p "$RESULT_ROOT"
 "${{MPIRUN[@]}}" python -u "${{ENTRYPOINT}}" "${{FLAGS[@]}}"
 PJSUB_EOF
 """
+
 RUN_ALL_TEMPLATE = """#!/bin/bash
 set -e
 
