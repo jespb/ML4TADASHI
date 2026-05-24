@@ -52,8 +52,8 @@ RESULT_DIR={result_root}/job_$PJM_JOBID
 
 MPIRUN=(
   mpirun -n 1
-  -stdout-proc "$RESULT_DIR/run{run_index}.out"
-  -stderr-proc "$RESULT_DIR/run{run_index}.err"
+  -stdout-proc "$RESULT_DIR/seed{seed}.out"
+  -stderr-proc "$RESULT_DIR/seed{seed}.err"
 )
 
 FLAGS=(
@@ -106,16 +106,10 @@ def get_parser():
         help="Number of evaluation trials per individual.",
     )
     parser.add_argument(
-        "--runs",
-        type=int,
-        default=3,
-        help="Independent seeded runs generated for each config and benchmark.",
-    )
-    parser.add_argument(
         "--seed",
         type=int,
         default=42,
-        help="Initial seed; run N uses seed + N.",
+        help="Initial seed.",
     )
     parser.add_argument(
         "--elapse",
@@ -143,8 +137,8 @@ def get_parser():
     return parser
 
 
-def result_root(results_dir, dataset, timestamp, config, benchmark, run_index):
-    subdir = f"{config['name']}-run{run_index}"
+def result_root(results_dir, dataset, timestamp, config, benchmark):
+    subdir = f"{config['name']}"
     path = results_dir / dataset / benchmark / timestamp / subdir
     return path.resolve()
 
@@ -163,12 +157,12 @@ def build_submission(path, result_root_path):
     )
 
 
-def build_job(args, timestamp, config, benchmark, run_index):
-    seed = args.seed + run_index
+def build_job(args, timestamp, config, benchmark):
+    seed = args.seed
     result_root_path = result_root(
-        args.results_dir, args.dataset, timestamp, config, benchmark, run_index
+        args.results_dir, args.dataset, timestamp, config, benchmark
     )
-    job_name = f"EvoT_{config['name']}_{benchmark}_r{run_index}"
+    job_name = f"EvoT_{config['name']}_{benchmark}_s{seed}"
 
     flags = [
         f"--translator={config['translator']}",
@@ -189,8 +183,8 @@ def build_job(args, timestamp, config, benchmark, run_index):
         env="\n".join(config["env"]),
         entrypoint=quote(str(REPO_ROOT / "examples/polybench_evotadashi.py")),
         result_root=quote(str(result_root_path)),
-        run_index=run_index,
         flags="\n".join(f"  {quote(f)}" for f in flags),
+        seed=args.seed,
     )
 
 
@@ -203,21 +197,19 @@ def main():
 
     for config in CONFIGS:
         for benchmark in benchmarks:
-            for run_index in range(args.runs):
-                filename = f"{benchmark}_run{run_index}.sh"
-                path = args.output_dir / config["name"] / filename
-                root = result_root(
-                    args.results_dir,
-                    args.dataset,
-                    timestamp,
-                    config,
-                    benchmark,
-                    run_index,
-                )
-                run_all.append(build_submission(path, root))
-                path.parent.mkdir(parents=True, exist_ok=True)
-                body = build_job(args, timestamp, config, benchmark, run_index)
-                path.write_text(body)
+            filename = f"{benchmark}.sh"
+            path = args.output_dir / config["name"] / filename
+            root = result_root(
+                args.results_dir,
+                args.dataset,
+                timestamp,
+                config,
+                benchmark,
+            )
+            run_all.append(build_submission(path, root))
+            path.parent.mkdir(parents=True, exist_ok=True)
+            body = build_job(args, timestamp, config, benchmark)
+            path.write_text(body)
 
     run_all_path = args.output_dir / "run_all.sh"
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -227,7 +219,6 @@ def main():
 
     print("configs:", ", ".join(config["name"] for config in CONFIGS))
     print("benchmarks:", len(benchmarks))
-    print("runs per config/benchmark:", args.runs)
     print("jobs:", len(run_all))
     print("timestamp:", timestamp)
     print("run all:", run_all_path)
