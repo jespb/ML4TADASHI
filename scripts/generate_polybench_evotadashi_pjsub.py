@@ -144,8 +144,8 @@ def get_parser():
 
 
 def result_root(results_dir, dataset, timestamp, config, benchmark, run_index):
-    subdir = f"{dataset}-{config['name']}-{benchmark}-run{run_index}"
-    path = results_dir / subdir / timestamp
+    subdir = f"{config['name']}-run{run_index}"
+    path = results_dir / dataset / benchmark / timestamp / subdir
     return path.resolve()
 
 
