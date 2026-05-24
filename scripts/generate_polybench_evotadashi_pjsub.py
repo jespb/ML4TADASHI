@@ -45,7 +45,7 @@ export LD_PRELOAD=/usr/lib/FJSVtcs/ple/lib64/libpmix.so
 
 {env}
 
-RESULT_DIR=$RESULT_ROOT/job_$PJM_JOBID
+RESULT_DIR=$RESULT_ROOT/pjsub.$PJM_JOBID
 
 MPIRUN=(
   mpirun -n 1
