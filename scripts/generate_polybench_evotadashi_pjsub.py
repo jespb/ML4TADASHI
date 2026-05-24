@@ -213,8 +213,7 @@ def main():
 
     run_all_path = args.output_dir / "run_all.sh"
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    submissions = "\n".join(run_all)
-    run_all_path.write_text(RUN_ALL_TEMPLATE.format(submissions=submissions))
+    run_all_path.write_text(RUN_ALL_TEMPLATE.format(submissions="\n".join(run_all)))
     os.chmod(run_all_path, 0o755)
 
     print("configs:", ", ".join(config["name"] for config in CONFIGS))
