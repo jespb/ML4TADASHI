@@ -117,6 +117,7 @@ class Individual:
                     app.scops[x1].rollback()
                     # app.reset_scops()
                     # app.transform_list(op_list)
+                    self.logger.debug(f"Failed NextTranformation {op}")
 
             print(
                 "Mutation failed (attempts: %d, remaining possibilities: %d)"
