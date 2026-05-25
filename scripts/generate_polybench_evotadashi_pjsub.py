@@ -40,6 +40,7 @@ mkdir -p "$RESULT_ROOT"
 pjsub \
   -o "$RESULT_ROOT/pjsub.%j.stdout" \
   -e "$RESULT_ROOT/pjsub.%j.stderr" \
+  --spath "$RESULT_ROOT/pjsub.%j.stat"
   -x RESULT_ROOT="$RESULT_ROOT" \
   -x ENTRYPOINT="$ENTRYPOINT" <<'PJSUB_EOF'
 #!/bin/bash
