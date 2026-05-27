@@ -52,6 +52,7 @@ pjsub \
 #PJM --mpi "max-proc-per-node=1"
 # #PJM --llio localtmp-size=40Gi
 #PJM -S
+#PJM -j
 
 set -e
 
