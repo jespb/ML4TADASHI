@@ -2,7 +2,6 @@
 
 import argparse
 import os
-from datetime import datetime
 from pathlib import Path
 from shlex import quote
 
@@ -157,9 +156,10 @@ def get_parser():
     return parser
 
 
-def build_submission_script(args, timestamp, config, benchmark, path):
-    seed = args.seed
-    root = args.results_dir / args.dataset / benchmark / timestamp / config["name"]
+def build_submission_script(args, config, benchmark, path):
+    config_str = f"ps{args.population_size}-mg{args.max_gen}-nt{args.n_trials}"
+    name_str = f"{config['name']}-s{args.seed}"
+    root = args.results_dir / args.dataset / config_str / benchmark / name_str
     flags = [
         f"--translator={config['translator']}",
         f"--benchmark={benchmark}",
@@ -167,7 +167,7 @@ def build_submission_script(args, timestamp, config, benchmark, path):
         f"--population-size={args.population_size}",
         f"--max-gen={args.max_gen}",
         f"--n-trials={args.n_trials}",
-        f"--init_seed={seed}",
+        f"--init_seed={args.seed}",
         "--use-mpi",
     ]
     if root.is_absolute():
@@ -177,13 +177,13 @@ def build_submission_script(args, timestamp, config, benchmark, path):
     return SUBMISSION_TEMPLATE.format(
         result_root=result_root,
         pjm_group=args.pjm_group,
-        job_name=f"EvoT_{config['name']}_{benchmark}_s{seed}",
+        job_name=f"EvoT_{config['name']}_{benchmark}",
         resource_group="small",
         elapse=args.elapse,
         nodes=args.nodes or args.population_size + 1,
         env="\n".join(config["env"]),
         flags="\n".join(f"  {quote(f)}" for f in flags),
-        seed=seed,
+        seed=args.seed,
     )
 
 
@@ -191,7 +191,6 @@ def main():
     args = get_parser().parse_args()
     bms = args.benchmarks if args.benchmarks else Polybench.get_benchmarks()
     benchmarks = [Path(str(b)).name for b in bms]
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     run_all = []
 
     for config in CONFIGS:
@@ -201,7 +200,7 @@ def main():
             relative_path = path.relative_to(args.output_dir)
             run_all.append('"$SCRIPT_DIR"/' + quote(str(relative_path)))
             path.parent.mkdir(parents=True, exist_ok=True)
-            body = build_submission_script(args, timestamp, config, benchmark, path)
+            body = build_submission_script(args, config, benchmark, path)
             path.write_text(body)
             os.chmod(path, 0o755)
 
@@ -213,7 +212,6 @@ def main():
     print("configs:", ", ".join(config["name"] for config in CONFIGS))
     print("benchmarks:", len(benchmarks))
     print("jobs:", len(run_all))
-    print("timestamp:", timestamp)
     print("run all:", run_all_path)
 
 
