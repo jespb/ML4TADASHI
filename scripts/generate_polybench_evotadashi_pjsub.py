@@ -196,7 +196,7 @@ def main():
                 / config["name"]
                 / f"{benchmark}-seed{args.seed}.sh"
             )
-            relative_path = path.relative_to(args.output_dir)
+            relative_path = path.relative_to(args.output_dir / args.dataset)
             run_all.append('"$SCRIPT_DIR"/' + quote(str(relative_path)))
             path.parent.mkdir(parents=True, exist_ok=True)
             body = build_submission_script(args, config, benchmark, path)
