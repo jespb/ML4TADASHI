@@ -4,26 +4,10 @@ from typing import Optional
 from ml4tadashi.EvoTADASHI import EvoTADASHI
 from ml4tadashi.EvoTADASHI import get_parser as get_mlargs_parser
 from tadashi import translators
-from tadashi.apps import Polybench, Simple
-
-
-def get_appargs_parser(
-    parser: Optional[argparse.ArgumentParser] = None,
-) -> argparse.ArgumentParser:
-    if not parser:
-        parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--translator", type=str, choices=["Pet", "Polly"], default="Pet"
-    )
-    parser.add_argument("--benchmark", type=str, default="stencils/jacobi-1d")
-    parser.add_argument("--base", type=str, default="examples/polybench")
-    parser.add_argument("--dataset", type=str, default="LARGE")
-    parser.add_argument("--oflag", type=int, default=3)
-    return parser
-
+from tadashi.apps import Polybench
 
 if __name__ == "__main__":
-    app_args, ml_args = get_appargs_parser().parse_known_args()
+    app_args, ml_args = Polybench.args_parser().parse_known_args()
     ml_args = get_mlargs_parser().parse_args(ml_args)
 
     translator = None
