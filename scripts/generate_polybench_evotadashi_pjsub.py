@@ -14,9 +14,9 @@ CONFIGS = [
         "env": [],
     },
     {
-        "name": "polly-llvm19",
-        "translator": "Polly",
-        "env": ["source /home/apps/oss/llvm-v19.1.4/init.sh"],
+        "name": "pet-fcc",
+        "translator": "Pet",
+        "env": ["export CC=fcc"],
     },
     {
         "name": "polly-llvm21",
