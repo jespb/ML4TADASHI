@@ -95,6 +95,9 @@ def get_parser():
         default=Path("jobs/polybench_evotadashi"),
         help="Directory where generated PJSub scripts are written.",
     )
+    parser.add_argument(
+        "--allow-omp", action=argparse.BooleanOptionalAction, default=True
+    )
     parser.add_argument(  # before
         "--dataset",
         type=str,
@@ -169,6 +172,7 @@ def build_submission_script(args, config, benchmark, path):
         f"--n-trials={args.n_trials}",
         f"--init_seed={args.seed}",
         "--use-mpi",
+        "--allow-omp" if args.allow_omp else "--no-allow-omp",
     ]
     return SUBMISSION_TEMPLATE.format(
         job_name=f"EvoT_{config['name']}_{benchmark}",
